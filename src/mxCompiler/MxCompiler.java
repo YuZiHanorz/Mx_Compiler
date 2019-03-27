@@ -57,7 +57,7 @@ public class MxCompiler {
         }
         catch (FileNotFoundException err){
             System.out.println(err.toString());
-            exit(0);
+            //exit(0);
         }
 
         //compile
@@ -110,7 +110,7 @@ public class MxCompiler {
     private static void needHelp(){
         System.out.println("It seems that you need some little help\n");
         printHelpInfo();
-        exit(0);
+        //exit(0);
     }
 
     private static String output(String input){

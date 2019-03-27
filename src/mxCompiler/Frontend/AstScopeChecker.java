@@ -414,6 +414,14 @@ public class AstScopeChecker implements AstVisitor{
             errorTable.addError(varDecl.location, "varName conflicts with existed globalVar");
             return;
         }
+        if (globalSYmbolTable.getCustomType(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed class");
+            return;
+        }
+        if (globalSYmbolTable.getFunc(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed function");
+            return;
+        }
         if (varDecl.init != null)
             varDecl.init.accept(this);
         varDecl.symbol = new VarSymbol(varDecl.name, type, varDecl.location, true, false);
@@ -480,10 +488,18 @@ public class AstScopeChecker implements AstVisitor{
             errorTable.addError(varDecl.location, "varType cannot be null");
             return;
         }
+        if (currentSymbolTable.getVar(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed Var");
+            return;
+        }
+        if (currentSymbolTable.getFunc(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed function");
+            return;
+        }
         if (varDecl.init != null){
             varDecl.init.accept(this);
         }
-        boolean isGlobal = currentSymbolTable == globalSYmbolTable;
+        boolean isGlobal = false;
         boolean isClassMember = classOwn.containsKey(currentSymbolTable);
         varDecl.symbol = new VarSymbol(varDecl.name, type, varDecl.location, isGlobal, isClassMember);
         currentSymbolTable.putVar(varDecl.name, varDecl.symbol);

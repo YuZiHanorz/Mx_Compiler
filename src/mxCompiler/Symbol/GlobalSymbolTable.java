@@ -36,7 +36,7 @@ public class GlobalSymbolTable extends SymbolTable{
     }
 
     private TypeType typeString(){
-        CustomTypeSymbol symbol = customTypeMap.get("void");
+        CustomTypeSymbol symbol = customTypeMap.get("string");
         return new TypeCustom("string", symbol);
     }
 

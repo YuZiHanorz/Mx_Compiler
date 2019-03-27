@@ -161,11 +161,12 @@ public class GlobalSymbolTable extends SymbolTable{
         Tstring.name = "string";
         Tstring.location = new Location(0,0);
         Tstring.classSymbolTable = new SymbolTable(this);
+        //wtf: first put class<string> into map, then add Func<substring>
+        putCustomType("string", Tstring);
         Tstring.classSymbolTable.putFunc("length", lengthStringBIF());
         Tstring.classSymbolTable.putFunc("substring", substringStringBIF());
         Tstring.classSymbolTable.putFunc("parseInt", parseIntStringBIF());
         Tstring.classSymbolTable.putFunc("ord", ordStringBIF());
-        putCustomType("string", Tstring);
 
         putFunc("print", printBIF());
         putFunc("println", printlnBIF());

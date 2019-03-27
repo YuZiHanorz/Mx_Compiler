@@ -179,7 +179,7 @@ public class AstPrinter implements AstVisitor {
         addNewLine("for:");
         indent();
 
-        addNewLine("ïnit:");
+        addNewLine("init:");
         indent();
         if (node.init != null)
             node.init.accept(this);

@@ -9,6 +9,7 @@ import mxCompiler.Parser.MxLexer;
 import mxCompiler.Parser.MxParser;
 import mxCompiler.Parser.SyntaxErrorListener;
 import mxCompiler.Symbol.GlobalSymbolTable;
+import mxCompiler.Utility.Configuration;
 import mxCompiler.Utility.ErrorTable;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -21,12 +22,8 @@ import static java.lang.System.err;
 import static java.lang.System.exit;
 
 public class MxCompiler {
-    public static void main(String[] args) throws IOException {
-        parse(args);
-        compile();
-    }
 
-    private static void parse(String[] args){
+    public static void main(String[] args) throws IOException {
         try{
             String input = "program.cpp";
             for (int i = 0; i < args.length; ++i){
@@ -62,9 +59,8 @@ public class MxCompiler {
             System.out.println(err.toString());
             exit(0);
         }
-    }
 
-    private static void compile() throws IOException {
+        //compile
         ErrorTable errorTable = new ErrorTable();
 
         //build AST

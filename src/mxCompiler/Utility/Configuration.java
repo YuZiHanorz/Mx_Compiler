@@ -1,4 +1,4 @@
-package mxCompiler;
+package mxCompiler.Utility;
 
 import java.io.FileInputStream;
 import java.io.PrintStream;

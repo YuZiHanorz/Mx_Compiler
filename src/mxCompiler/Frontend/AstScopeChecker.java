@@ -30,8 +30,10 @@ public class AstScopeChecker implements AstVisitor{
     @Override
     public void visit(ProgramNode node){
         //not effected by forward reference
-        for (ClassDeclNode x : node.globalClassList) {
+        for (ClassDeclNode x : node.globalClassList)
             classCheckIn(x);
+        //wtf: type can be class that is defined later
+        for (ClassDeclNode x : node.globalClassList){
             classMethodCheckIn(x);
             classMemberCheckIn(x);
         }
@@ -499,7 +501,7 @@ public class AstScopeChecker implements AstVisitor{
         if (varDecl.init != null){
             varDecl.init.accept(this);
         }
-        boolean isGlobal = false;
+        boolean isGlobal = currentSymbolTable == globalSYmbolTable;
         boolean isClassMember = classOwn.containsKey(currentSymbolTable);
         varDecl.symbol = new VarSymbol(varDecl.name, type, varDecl.location, isGlobal, isClassMember);
         currentSymbolTable.putVar(varDecl.name, varDecl.symbol);

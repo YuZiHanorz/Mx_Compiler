@@ -22,7 +22,11 @@ import static java.lang.System.err;
 import static java.lang.System.exit;
 
 public class MxCompiler {
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 443c617a0bac286f63358e44fba303b3ad3825f3
     public static void main(String[] args) throws IOException {
         try{
             String input = "program.cpp";
@@ -59,7 +63,11 @@ public class MxCompiler {
             System.out.println(err.toString());
             exit(0);
         }
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 443c617a0bac286f63358e44fba303b3ad3825f3
         //compile
         ErrorTable errorTable = new ErrorTable();
 
@@ -98,7 +106,7 @@ public class MxCompiler {
 
         checkError(errorTable);
     }
-
+    
     private static void printHelpInfo(){
         System.out.println("This is a uncompleted, somewhat silly compiler for Mx* Language\n");
         System.out.println("\tUsage:  Mx_Compiler [--printAST] [source] [-o file]");

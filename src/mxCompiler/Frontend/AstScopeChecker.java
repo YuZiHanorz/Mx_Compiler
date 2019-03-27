@@ -29,24 +29,27 @@ public class AstScopeChecker implements AstVisitor{
 
     @Override
     public void visit(ProgramNode node){
-        for (ClassDeclNode x : node.globalClassList)
-            classCheckIn(x);
-        for (FuncDeclNode x : node.globalFuncList)
-            globalFuncCheckIn(x);
-        for (VarDeclNode x : node.globalVarList)
-            globalVarCheckIn(x);
-        if (errorTable.somethingWrong())
-            return;
+        //not effected by forward reference
         for (ClassDeclNode x : node.globalClassList) {
+            classCheckIn(x);
             classMethodCheckIn(x);
             classMemberCheckIn(x);
-            classMethodDefine(x);
+        }
+        for (FuncDeclNode x : node.globalFuncList)
+            globalFuncCheckIn(x);
+        if (errorTable.somethingWrong())
+            return;
+
+        //fucking forward reference
+        for (DeclNode x : node.declList){
+            if (x instanceof ClassDeclNode)
+                classMethodDefine((ClassDeclNode)x);
+            else if (x instanceof FuncDeclNode)
+                funcDefine((FuncDeclNode) x, null);
+            else globalVarCheckIn((VarDeclNode) x);
         }
         if (errorTable.somethingWrong())
             return;
-        for (FuncDeclNode x : node.globalFuncList){
-            funcDefine(x, null);
-        }
     }
 
     @Override

@@ -27,7 +27,7 @@ public class ProgramNode extends Node {
         globalClassList.add(c);
         declList.add(c);
     }
-
+    
     // one line can declare many variables
     public void addAll(List<VarDeclNode> vL){
         globalVarList.addAll(vL);

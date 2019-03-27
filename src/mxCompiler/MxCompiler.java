@@ -21,12 +21,8 @@ import static java.lang.System.err;
 import static java.lang.System.exit;
 
 public class MxCompiler {
+    
     public static void main(String[] args) throws IOException {
-        parse(args);
-        compile();
-    }
-
-    private static void parse(String[] args){
         try{
             String input = "program.cpp";
             for (int i = 0; i < args.length; ++i){
@@ -62,9 +58,8 @@ public class MxCompiler {
             System.out.println(err.toString());
             exit(0);
         }
-    }
-
-    private static void compile() throws IOException {
+        
+        //compile
         ErrorTable errorTable = new ErrorTable();
 
         //build AST
@@ -102,7 +97,7 @@ public class MxCompiler {
 
         checkError(errorTable);
     }
-
+    
     private static void printHelpInfo(){
         System.out.println("This is a uncompleted, somewhat silly compiler for Mx* Language\n");
         System.out.println("\tUsage:  Mx_Compiler [--printAST] [source] [-o file]");

@@ -36,6 +36,7 @@ public class MxCompiler {
             //Configuration.printAST = true;
             Configuration.printIR = true;
             Configuration.printAsmFile = true;
+            Configuration.printAST = true;
             input = CharStreams.fromStream(Configuration.fin); //debug
         }
 
@@ -125,13 +126,13 @@ public class MxCompiler {
             nasmPrinter.visit(irProgram);
             nasmPrinter.printTo(new PrintStream("program.asm"));
         }
-        else {
-            System.err.println("------------------------");
-            System.err.println("Print nasm finally:\n");
-            NASMPrinter nasmPrinter = new NASMPrinter();
-            nasmPrinter.visit(irProgram);
-            nasmPrinter.printTo(System.err);
-        }
+
+        System.err.println("------------------------");
+        System.err.println("Print nasm finally:\n");
+        NASMPrinter nasmPrinter = new NASMPrinter();
+        nasmPrinter.visit(irProgram);
+        nasmPrinter.printTo(System.err);
+
 
     }
 

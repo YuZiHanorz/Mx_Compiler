@@ -1,7 +1,6 @@
 package mxCompiler.Utility;
 
 import java.io.FileInputStream;
-import java.io.PrintStream;
 
 public class Configuration {
     public static FileInputStream fin;

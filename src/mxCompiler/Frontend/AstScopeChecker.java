@@ -429,6 +429,7 @@ public class AstScopeChecker implements AstVisitor{
         }
         if (varDecl.init != null) {
             globalSYmbolTable.globalinitVarSet.add(varDecl.symbol);
+        if (varDecl.init != null)
             varDecl.init.accept(this);
         }
         varDecl.symbol = new VarSymbol(varDecl.name, type, varDecl.location, true, false);

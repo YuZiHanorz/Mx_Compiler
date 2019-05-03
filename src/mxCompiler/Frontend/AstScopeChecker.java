@@ -278,6 +278,9 @@ public class AstScopeChecker implements AstVisitor{
         }
         node.symbol = vs;
         node.calcType = node.symbol.type;
+        if (vs.isGlobal && currentFunction != null)
+            currentFunction.globalVarSet.add(vs);
+
     }
 
     @Override
@@ -424,8 +427,11 @@ public class AstScopeChecker implements AstVisitor{
             errorTable.addError(varDecl.location, "varName conflicts with existed function");
             return;
         }
+        if (varDecl.init != null) {
+            globalSYmbolTable.globalinitVarSet.add(varDecl.symbol);
         if (varDecl.init != null)
             varDecl.init.accept(this);
+        }
         varDecl.symbol = new VarSymbol(varDecl.name, type, varDecl.location, true, false);
         globalSYmbolTable.putVar(varDecl.name, varDecl.symbol);
     }

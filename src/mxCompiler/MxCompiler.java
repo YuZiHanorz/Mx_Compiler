@@ -127,10 +127,10 @@ public class MxCompiler {
         }
         NASMPrinter nasmPrinter = new NASMPrinter();
         nasmPrinter.visit(irProgram);
-        nasmPrinter.printTo(System.err);
+        nasmPrinter.printTo(System.out);
     }
 
-    private static void printHelpInfo(){
+    /*private static void printHelpInfo(){
         System.out.println("This is a uncompleted, somewhat silly compiler for Mx* Language\n");
         System.out.println("\tUsage:  Mx_Compiler [--printAST] [source] [-o file]");
         System.out.println("\tSource default is program.cpp");
@@ -152,7 +152,7 @@ public class MxCompiler {
         }
         str.append("asm");
         return str.toString();
-    }
+    }*/
 
     private static void checkError(ErrorTable errorTable){
         if (errorTable.somethingWrong()){

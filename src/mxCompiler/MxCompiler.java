@@ -28,7 +28,7 @@ import static java.lang.System.exit;
 public class MxCompiler {
 
     public static void main(String[] args) throws IOException {
-        boolean debug = true;
+        boolean debug = false;
         CharStream input;
         if (debug){
             String filename = "program.cpp";
@@ -126,9 +126,7 @@ public class MxCompiler {
             nasmPrinter.visit(irProgram);
             nasmPrinter.printTo(new PrintStream("program.asm"));
         }
-
-        System.err.println("------------------------");
-        System.err.println("Print nasm finally:\n");
+        
         NASMPrinter nasmPrinter = new NASMPrinter();
         nasmPrinter.visit(irProgram);
         nasmPrinter.printTo(System.err);

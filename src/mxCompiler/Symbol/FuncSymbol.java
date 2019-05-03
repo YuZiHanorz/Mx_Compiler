@@ -14,8 +14,8 @@ public class FuncSymbol {
     public List<String> parameterNameList;
     public List<TypeType> parameterTypeList;
 
-    //public HashSet<VarSymbol> globalVarSet;
-    //public HashSet<FuncSymbol> funcCallSet;
+    public HashSet<VarSymbol> globalVarSet;
+    //public HashSet<FuncSymbol> funcCalleeSet;
 
     public boolean isGlobalFunc;
 
@@ -26,8 +26,8 @@ public class FuncSymbol {
     public FuncSymbol(){
         this.parameterNameList = new LinkedList<>();
         this.parameterTypeList = new LinkedList<>();
-        //this.globalVarSet = new HashSet<>();
-        //this.funcCallSet = new HashSet<>();
+        this.globalVarSet = new HashSet<>();
+        //this.funcCalleeSet = new HashSet<>();
     }
 
 

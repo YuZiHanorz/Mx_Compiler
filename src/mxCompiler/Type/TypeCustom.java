@@ -1,6 +1,7 @@
 package mxCompiler.Type;
 
 import mxCompiler.Symbol.CustomTypeSymbol;
+import mxCompiler.Utility.Configuration;
 
 //includes class, string and null
 public class TypeCustom extends TypeType {
@@ -26,5 +27,10 @@ public class TypeCustom extends TypeType {
             else return other.equals("null") || this.name.equals("null");
         }
         else return false;
+    }
+
+    @Override
+    public int getSize(){
+        return Configuration.regSize * symbol.classSymbolTable.varMap.values().size();
     }
 }

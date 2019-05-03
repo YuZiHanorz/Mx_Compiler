@@ -1,16 +1,20 @@
 package mxCompiler;
 
 import mxCompiler.Ast.node.ProgramNode;
-import mxCompiler.Frontend.AstBuilder;
-import mxCompiler.Frontend.AstPrinter;
-import mxCompiler.Frontend.AstScopeChecker;
-import mxCompiler.Frontend.SemanticChecker;
+import mxCompiler.Backend.IRRescanner;
+import mxCompiler.Backend.NASMPrinter;
+import mxCompiler.Backend.NASMTransformer;
+import mxCompiler.Backend.SimpleRegisterAllocator;
+import mxCompiler.Frontend.*;
+import mxCompiler.IR.node.IRProgram;
+import mxCompiler.IR.operand.IRRegister;
 import mxCompiler.Parser.MxLexer;
 import mxCompiler.Parser.MxParser;
 import mxCompiler.Parser.SyntaxErrorListener;
 import mxCompiler.Symbol.GlobalSymbolTable;
 import mxCompiler.Utility.Configuration;
 import mxCompiler.Utility.ErrorTable;
+import mxCompiler.Utility.RegCollection;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -22,57 +26,28 @@ import static java.lang.System.err;
 import static java.lang.System.exit;
 
 public class MxCompiler {
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 443c617a0bac286f63358e44fba303b3ad3825f3
     public static void main(String[] args) throws IOException {
-        try{
-            String input = "program.cpp";
-            for (int i = 0; i < args.length; ++i){
-                String arg = args[i];
-                switch (arg) {
-                    case "--printAST":
-                        Configuration.printAST = true;
-                        break;
-                    case "-o":
-                        if (i < args.length - 1){
-                            ++i;
-                            arg = args[i];
-                            Configuration.fout = new PrintStream(arg);
-                        }
-                        else needHelp();
-                        break;
-                    default:
-                        if(Configuration.fin == null){
-                            input = arg;
-                            Configuration.fin = new FileInputStream(arg);
-                        }
-                        else needHelp();
-                        break;
-                }
-            }
-            if (Configuration.fin == null)
-                Configuration.fin = new FileInputStream(input);
-            if (Configuration.fout == null)
-                Configuration.fout = new PrintStream(output(input));
-            Configuration.printAST = true;
+        boolean debug = true;
+        CharStream input;
+        if (debug){
+            String filename = "program.cpp";
+            Configuration.fin = new FileInputStream(filename);
+            //Configuration.printAST = true;
+            Configuration.printIR = true;
+            Configuration.printAsmFile = true;
+            input = CharStreams.fromStream(Configuration.fin); //debug
         }
-        catch (FileNotFoundException err){
-            System.out.println(err.toString());
-            exit(0);
-        }
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 443c617a0bac286f63358e44fba303b3ad3825f3
+        else {
+            input = CharStreams.fromStream(System.in);
+        }
+
         //compile
         ErrorTable errorTable = new ErrorTable();
+        RegCollection.build();
 
         //build AST
-        CharStream input = CharStreams.fromStream(Configuration.fin);
         MxLexer mxLexer = new MxLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(mxLexer);
         MxParser parser = new MxParser(tokens);
@@ -105,8 +80,61 @@ public class MxCompiler {
         ast.accept(semanticChecker);
 
         checkError(errorTable);
+
+        IRBuilder irBuilder = new IRBuilder(globalSymbolTable);
+        ast.accept(irBuilder);
+        IRProgram irProgram = irBuilder.irProgram;
+
+        if (Configuration.printIR){
+            System.err.println("------------------------");
+            System.err.println("Print IR after building:\n");
+            IRPrinter irPrinter = new IRPrinter();
+            irPrinter.visit(irProgram);
+            irPrinter.printTo(System.err);
+        }
+
+        IRRescanner irRescanner = new IRRescanner();
+        irProgram.accept(irRescanner);
+
+        if (Configuration.printIR){
+            System.err.println("------------------------");
+            System.err.println("Print IR after rescanning:\n");
+            IRPrinter irPrinter = new IRPrinter();
+            irPrinter.visit(irProgram);
+            irPrinter.printTo(System.err);
+        }
+
+        SimpleRegisterAllocator simpleRegisterAllocator = new SimpleRegisterAllocator(irProgram);
+        simpleRegisterAllocator.build();
+
+        if (Configuration.printIR){
+            System.err.println("------------------------");
+            System.err.println("Print IR after allocation:\n");
+            IRPrinter irPrinter = new IRPrinter();
+            irPrinter.visit(irProgram);
+            irPrinter.printTo(System.err);
+        }
+
+        NASMTransformer nasmTransformer = new NASMTransformer(irProgram);
+        nasmTransformer.build();
+
+        if (Configuration.printAsmFile){
+            System.err.println("------------------------");
+            System.err.println("Print nasm finally:\n");
+            NASMPrinter nasmPrinter = new NASMPrinter();
+            nasmPrinter.visit(irProgram);
+            nasmPrinter.printTo(new PrintStream("program.asm"));
+        }
+        else {
+            System.err.println("------------------------");
+            System.err.println("Print nasm finally:\n");
+            NASMPrinter nasmPrinter = new NASMPrinter();
+            nasmPrinter.visit(irProgram);
+            nasmPrinter.printTo(System.err);
+        }
+
     }
-    
+
     private static void printHelpInfo(){
         System.out.println("This is a uncompleted, somewhat silly compiler for Mx* Language\n");
         System.out.println("\tUsage:  Mx_Compiler [--printAST] [source] [-o file]");

@@ -5,7 +5,7 @@ import mxCompiler.Ast.AstVisitor;
 import java.util.*;
 
 public class NewExprNode extends ExprNode {
-    public TypeNode type = null;
+    public TypeNode type = null; //base or custom(no array)
     public List<ExprNode> defineSizeList;
     public int notDefine = -1;
 

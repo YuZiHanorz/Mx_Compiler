@@ -1,6 +1,7 @@
 package mxCompiler.Type;
 
 import mxCompiler.Symbol.BaseTypeSymbol;
+import mxCompiler.Utility.Configuration;
 
 //includes int, bool, void
 public class TypeBase extends TypeType {
@@ -22,6 +23,11 @@ public class TypeBase extends TypeType {
             else return false;
         }
         else return false;
+    }
+
+    @Override
+    public int getSize(){
+        return Configuration.regSize;
     }
 }
 

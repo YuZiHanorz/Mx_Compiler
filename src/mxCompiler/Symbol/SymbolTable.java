@@ -1,5 +1,8 @@
 package mxCompiler.Symbol;
 
+import mxCompiler.Utility.Configuration;
+import org.antlr.v4.misc.OrderedHashMap;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,15 +15,21 @@ public class SymbolTable {
     public Map<String, VarSymbol> varMap;
     public Map<String, FuncSymbol> funcMap;
 
+    public Map<String, Integer> varOffsetMap;
+    private Integer curOffset = 0;
+
     public SymbolTable(SymbolTable fa){
         this.Fa = fa;
         this.children = new LinkedList<>();
         this.varMap = new LinkedHashMap<>();
         this.funcMap = new LinkedHashMap<>();
+        this.varOffsetMap = new OrderedHashMap<>();
     }
 
     public void putVar(String name, VarSymbol var){
         varMap.put(name, var);
+        varOffsetMap.put(name, curOffset);
+        curOffset += Configuration.regSize;
     }
 
     public VarSymbol getVar(String name){
@@ -35,5 +44,8 @@ public class SymbolTable {
         return funcMap.get(name);
     }
 
+    public int getVarOffset(String name){
+        return varOffsetMap.get(name);
+    }
 
 }

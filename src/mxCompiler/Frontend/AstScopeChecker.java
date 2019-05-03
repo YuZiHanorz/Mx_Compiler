@@ -29,24 +29,29 @@ public class AstScopeChecker implements AstVisitor{
 
     @Override
     public void visit(ProgramNode node){
+        //not effected by forward reference
         for (ClassDeclNode x : node.globalClassList)
             classCheckIn(x);
-        for (FuncDeclNode x : node.globalFuncList)
-            globalFuncCheckIn(x);
-        for (VarDeclNode x : node.globalVarList)
-            globalVarCheckIn(x);
-        if (errorTable.somethingWrong())
-            return;
-        for (ClassDeclNode x : node.globalClassList) {
+        //wtf: type can be class that is defined later
+        for (ClassDeclNode x : node.globalClassList){
             classMethodCheckIn(x);
             classMemberCheckIn(x);
-            classMethodDefine(x);
+        }
+        for (FuncDeclNode x : node.globalFuncList)
+            globalFuncCheckIn(x);
+        if (errorTable.somethingWrong())
+            return;
+
+        //fucking forward reference
+        for (DeclNode x : node.declList){
+            if (x instanceof ClassDeclNode)
+                classMethodDefine((ClassDeclNode)x);
+            else if (x instanceof FuncDeclNode)
+                funcDefine((FuncDeclNode) x, null);
+            else globalVarCheckIn((VarDeclNode) x);
         }
         if (errorTable.somethingWrong())
             return;
-        for (FuncDeclNode x : node.globalFuncList){
-            funcDefine(x, null);
-        }
     }
 
     @Override
@@ -273,6 +278,9 @@ public class AstScopeChecker implements AstVisitor{
         }
         node.symbol = vs;
         node.calcType = node.symbol.type;
+        if (vs.isGlobal && currentFunction != null)
+            currentFunction.globalVarSet.add(vs);
+
     }
 
     @Override
@@ -411,8 +419,18 @@ public class AstScopeChecker implements AstVisitor{
             errorTable.addError(varDecl.location, "varName conflicts with existed globalVar");
             return;
         }
-        if (varDecl.init != null)
+        if (globalSYmbolTable.getCustomType(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed class");
+            return;
+        }
+        if (globalSYmbolTable.getFunc(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed function");
+            return;
+        }
+        if (varDecl.init != null) {
+            globalSYmbolTable.globalinitVarSet.add(varDecl.symbol);
             varDecl.init.accept(this);
+        }
         varDecl.symbol = new VarSymbol(varDecl.name, type, varDecl.location, true, false);
         globalSYmbolTable.putVar(varDecl.name, varDecl.symbol);
     }
@@ -475,6 +493,14 @@ public class AstScopeChecker implements AstVisitor{
         }
         if (type instanceof TypeCustom && ((TypeCustom) type).name.equals("null")) {
             errorTable.addError(varDecl.location, "varType cannot be null");
+            return;
+        }
+        if (currentSymbolTable.getVar(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed Var");
+            return;
+        }
+        if (currentSymbolTable.getFunc(varDecl.name) != null){
+            errorTable.addError(varDecl.location, "varName conflicts with existed function");
             return;
         }
         if (varDecl.init != null){

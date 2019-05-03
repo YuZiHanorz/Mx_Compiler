@@ -1,5 +1,7 @@
 package mxCompiler.Type;
 
+import mxCompiler.Utility.Configuration;
+
 public class TypeArray extends TypeType {
     public TypeType elementType = null;
     public int dim = -1;
@@ -22,6 +24,11 @@ public class TypeArray extends TypeType {
             return this.dim == ((TypeArray) o).dim && this.elementType.match(((TypeArray) o).elementType);
         }
         else return false;
+    }
+
+    @Override
+    public int getSize(){
+        return Configuration.regSize;
     }
 
 }

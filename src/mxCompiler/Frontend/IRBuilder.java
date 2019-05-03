@@ -1110,16 +1110,20 @@ public class IRBuilder implements AstVisitor{
         if (node.lt.calcType instanceof TypeCustom && ((TypeCustom) node.lt.calcType).name.equals("string")){
             curBB.pushTailInst(new IRFuncCall(curBB, RegCollection.vrax, libStringCmp, lt, rt));
             curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrax));
-            curBB.pushTailInst(new IRBranch(curBB, cop, store, new IntImm(0),
-                        trueDestBBMap.get(node), falseDestBBMap.get(node)));
+            BasicBlock trueBB = trueDestBBMap.get(node);
+            BasicBlock falseBB = falseDestBBMap.get(node);
+            if (trueBB != null && falseBB != null)
+                curBB.pushTailInst(new IRBranch(curBB, cop, store, new IntImm(0), trueBB, falseBB));
             return;
         }
         if (lt instanceof IRMem && rt instanceof IRMem){
             curBB.pushTailInst(new IRMove(curBB, store, lt));
             lt = store;
         }
-        curBB.pushTailInst(new IRBranch(curBB, cop, lt, rt,
-                trueDestBBMap.get(node), falseDestBBMap.get(node)));
+        BasicBlock trueBB = trueDestBBMap.get(node);
+        BasicBlock falseBB = falseDestBBMap.get(node);
+        if (trueBB != null && falseBB != null)
+            curBB.pushTailInst(new IRBranch(curBB, cop, store, new IntImm(0), trueBB, falseBB));
     }
 
 

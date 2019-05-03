@@ -1,6 +1,5 @@
 package mxCompiler.Backend;
 
-import jdk.security.jarsigner.JarSigner;
 import mxCompiler.IR.node.*;
 import mxCompiler.IR.operand.*;
 import mxCompiler.Utility.RegCollection;

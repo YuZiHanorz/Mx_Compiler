@@ -36,7 +36,6 @@ public class MxCompiler {
             //Configuration.printAST = true;
             Configuration.printIR = true;
             Configuration.printAsmFile = true;
-            Configuration.printAST = true;
             input = CharStreams.fromStream(Configuration.fin); //debug
         }
 

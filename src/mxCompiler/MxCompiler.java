@@ -127,11 +127,10 @@ public class MxCompiler {
             nasmPrinter.printTo(new PrintStream("program.asm"));
         }
         
+        
         NASMPrinter nasmPrinter = new NASMPrinter();
         nasmPrinter.visit(irProgram);
         nasmPrinter.printTo(System.err);
-
-
     }
 
     private static void printHelpInfo(){

@@ -17,7 +17,7 @@ public class StackSlot extends IRMem {
     }
 
     @Override
-    public void accept(IRVisitor visítor){
-        visítor.visit(this);
+    public void accept(IRVisitor visitor){
+        visitor.visit(this);
     }
 }

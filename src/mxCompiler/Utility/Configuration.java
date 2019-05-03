@@ -7,7 +7,7 @@ public class Configuration {
 
     public static boolean printAST = false;
     public static boolean printIR = false;
-    public static boolean printAsmFile = true;
+    public static boolean printAsmFile = false;
 
     public static int regSize = 8;
 

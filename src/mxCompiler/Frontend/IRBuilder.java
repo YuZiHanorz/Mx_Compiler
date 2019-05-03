@@ -1107,7 +1107,7 @@ public class IRBuilder implements AstVisitor{
                 cop = IRBranch.Cop.LE;
                 break;
         }
-        if (node.lt.calcType instanceof TypeCustom && ((TypeCustom) node.lt.calcType).name.equals("string") && node.bop.equals("+")){
+        if (node.lt.calcType instanceof TypeCustom && ((TypeCustom) node.lt.calcType).name.equals("string")){
             curBB.pushTailInst(new IRFuncCall(curBB, RegCollection.vrax, libStringCmp, lt, rt));
             curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrax));
             curBB.pushTailInst(new IRBranch(curBB, cop, store, new IntImm(0),

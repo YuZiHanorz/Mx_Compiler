@@ -696,10 +696,18 @@ public class IRBuilder implements AstVisitor{
     @Override
     public void visit(ConstBoolNode node){
         BasicBlock dest;
-        if (node.valueStr.equals("true"))
+        IntImm val;
+        if (node.valueStr.equals("true")) {
             dest = trueDestBBMap.get(node);
-        else dest = falseDestBBMap.get(node);
-        curBB.pushTailInst(new IRJump(curBB, dest));
+            val = new IntImm(1);
+        }
+        else {
+            dest = falseDestBBMap.get(node);
+            val = new IntImm(0);
+        }
+        if (dest != null)
+            curBB.pushTailInst(new IRJump(curBB, dest));
+        exprSrcMap.put(node, val);
     }
 
     @Override

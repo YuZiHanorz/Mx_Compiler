@@ -74,7 +74,7 @@ public class GlobalSymbolTable extends SymbolTable{
 
     private FuncSymbol getStringBIF(){
         FuncSymbol f = new FuncSymbol();
-        f.name = "getStrihg";
+        f.name = "getString";
         f.isGlobalFunc = true;
         f.location = new Location(0,0);
         f.returnType = typeString();

@@ -77,12 +77,13 @@ public class IRRescanner implements IRVisitor {
             if (Configuration.simple){
                 PhysicalRegister destPreg = getPReg(instNode.dest);
                 PhysicalRegister srcPreg = getPReg(instNode.src);
-                if (destPreg != null) {
+                //to simplify simpleAllocator
+                if (destPreg != null && instNode.src instanceof IRMem) {
                     VirtualRegister vr = new VirtualRegister("");
                     instNode.prependInst(new IRMove(instNode.parentBB, vr, instNode.src));
                     instNode.src = vr;
                 }
-                else if (srcPreg != null){
+                else if (srcPreg != null && instNode.dest instanceof IRMem){
                     VirtualRegister vr = new VirtualRegister("");
                     instNode.prependInst(new IRMove(instNode.parentBB, vr, instNode.dest));
                     instNode.dest = vr;

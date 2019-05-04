@@ -153,7 +153,7 @@ public class IRPrinter implements IRVisitor {
             return;
         }
         if (instNode.bop == IRBinary.Bop.DIV || instNode.bop == IRBinary.Bop.MOD){
-            append("\t\t idiv");
+            append("\t\tidiv ");
             instNode.rt.accept(this);
             append("\n");
             return;

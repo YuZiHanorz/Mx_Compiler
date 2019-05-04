@@ -856,7 +856,7 @@ public class IRBuilder implements AstVisitor{
         for (Operand o : args){
             VirtualRegister vr = new VirtualRegister("");
             curBB.pushTailInst(new IRMove(curBB, vr, o));
-            argVregs.addLast(vr);
+            argVregs.add(vr);
         }
 
         FuncDeclNode func = ASTFuncDeclMap.get(f.name);

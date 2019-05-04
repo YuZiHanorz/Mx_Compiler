@@ -73,6 +73,22 @@ public class IRRescanner implements IRVisitor {
             instNode.prependInst(new IRMove(instNode.parentBB, vr, instNode.src));
             instNode.src = vr;
         }
+        else {
+            if (Configuration.simple){
+                PhysicalRegister destPreg = getPReg(instNode.dest);
+                PhysicalRegister srcPreg = getPReg(instNode.src);
+                if (destPreg != null) {
+                    VirtualRegister vr = new VirtualRegister("");
+                    instNode.prependInst(new IRMove(instNode.parentBB, vr, instNode.src));
+                    instNode.src = vr;
+                }
+                else if (srcPreg != null){
+                    VirtualRegister vr = new VirtualRegister("");
+                    instNode.prependInst(new IRMove(instNode.parentBB, vr, instNode.dest));
+                    instNode.dest = vr;
+                }
+            }
+        }
     }
 
     @Override
@@ -84,7 +100,7 @@ public class IRRescanner implements IRVisitor {
         for (VarSymbol v : callerGlovalVars){
             if (calleeGlobalVars.contains(v)){ //save
                 instNode.prependInst(new IRMove(instNode.parentBB, v.vR.spillOut, v.vR));
-                //instNode.prevInst.accept(this);
+                instNode.prevInst.accept(this);
             }
         }
         while (instNode.argList.size() > 6){ //move args to stackSlot
@@ -92,7 +108,7 @@ public class IRRescanner implements IRVisitor {
         }
         for (int i = instNode.argList.size() - 1; i >= 0; --i){ //move rest args to vArgs
             instNode.prependInst(new IRMove(instNode.parentBB, RegCollection.vArgRegList.get(i), instNode.argList.get(i)));
-            //instNode.prevInst.accept(this);
+            instNode.prevInst.accept(this);
         }
         for (VarSymbol v : callerGlovalVars){
             if (calleeGlobalVars.contains(v)) //load
@@ -137,5 +153,9 @@ public class IRRescanner implements IRVisitor {
     @Override
     public void visit(FuncPointer opNode){}
 
-
+    private PhysicalRegister getPReg(Operand vr){
+        if (vr instanceof VirtualRegister)
+            return ((VirtualRegister) vr).allocPhysicalReg;
+        else return null;
+    }
 }

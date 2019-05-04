@@ -19,7 +19,6 @@ global lib_stringConcat
 global lib_stringCmp
 global main
 
-extern lib_init
 extern strcmp
 extern __sprintf_chk
 extern __stack_chk_fail

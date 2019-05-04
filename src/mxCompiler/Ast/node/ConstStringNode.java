@@ -11,7 +11,8 @@ public class ConstStringNode extends ConstExprNode {
     public ConstStringNode(){}
     public ConstStringNode(Token token){
         location = new Location(token);
-        valueStr = resolveESC(token.getText());
+        String tmp = resolveESC(token.getText());
+        valueStr = tmp.substring(1, tmp.length()-1);
     }
     private String resolveESC(String string) {
         StringBuilder str = new StringBuilder();

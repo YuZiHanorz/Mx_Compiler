@@ -83,12 +83,6 @@ public class NASMPrinter implements IRVisitor {
                 append("00H\n");
             }
         }
-
-        for (StaticData sd : node.staticDataList){
-            append(getSDName(sd) + "<bytes: " + sd.size + " >");
-            if (sd.stringTypeInit != null)
-                append("<init: " + sd.stringTypeInit + " >\n");
-        }
     }
 
     @Override

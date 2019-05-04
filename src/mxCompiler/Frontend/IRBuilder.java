@@ -846,7 +846,7 @@ public class IRBuilder implements AstVisitor{
             funcOpCntMap.put(f, countOp(func.block));
         if (funcOpCntMap.get(f) >= Configuration.inlineOpCnt)
             return false;
-        return inlineVarRegMaps.size() >= Configuration.inlineMaxDepth;
+        return inlineVarRegMaps.size() <= Configuration.inlineMaxDepth;
     }
 
     private void buildInlineOpt(FuncSymbol f, LinkedList<Operand> args){
@@ -1131,7 +1131,7 @@ public class IRBuilder implements AstVisitor{
         BasicBlock trueBB = trueDestBBMap.get(node);
         BasicBlock falseBB = falseDestBBMap.get(node);
         if (trueBB != null && falseBB != null)
-            curBB.pushTailInst(new IRBranch(curBB, cop, store, new IntImm(0), trueBB, falseBB));
+            curBB.pushTailInst(new IRBranch(curBB, cop, lt, rt, trueBB, falseBB));
     }
 
 

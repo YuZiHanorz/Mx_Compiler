@@ -44,6 +44,7 @@ public class IRRescanner implements IRVisitor {
         }
     }
 
+    //do nothing
     @Override
     public void visit(IRJump instNode){}
 
@@ -58,7 +59,7 @@ public class IRRescanner implements IRVisitor {
         boolean flag = instNode.bop == IRBinary.Bop.MUL ||
                        instNode.bop == IRBinary.Bop.DIV ||
                        instNode.bop == IRBinary.Bop.MOD;
-        if (flag && instNode.rt instanceof IRConst){
+        if (flag && instNode.rt instanceof IRConst){ //must be reg or mem
             VirtualRegister vr = new VirtualRegister("");
             instNode.prependInst(new IRMove(instNode.parentBB, vr, instNode.rt));
             instNode.rt = vr;

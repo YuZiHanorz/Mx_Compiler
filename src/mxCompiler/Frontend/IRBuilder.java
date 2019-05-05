@@ -28,10 +28,10 @@ public class IRBuilder implements AstVisitor{
 
     public GlobalSymbolTable globalSymbolTable;
 
+    //for break and continue
     public BasicBlock continueDestBB;
     public BasicBlock breakDestBB;
 
-    public HashMap<String, FuncDeclNode> ASTFuncDeclMap;
     public HashMap<String, IRFunc> IRFuncMap;
 
     public HashMap<ExprNode, BasicBlock> trueDestBBMap;
@@ -39,9 +39,11 @@ public class IRBuilder implements AstVisitor{
 
     public HashMap<ExprNode, IRStorePos> exprDestMap;
     public HashMap<ExprNode, Operand> exprSrcMap;
+    public boolean isInClass = false, isInArgs = false;
 
     //for inlineOpt
-    public boolean isInClass = false, isInArgs = false, isInline = false;
+    public HashMap<String, FuncDeclNode> ASTFuncDeclMap;
+    public boolean isInline = false;
     public LinkedList<HashMap<VarSymbol, VirtualRegister>> inlineVarRegMaps;
     public LinkedList<BasicBlock> inlineFuncLeaveBBs;
 
@@ -94,13 +96,16 @@ public class IRBuilder implements AstVisitor{
         IRFuncMap.put("string.parseInt", funcParseInt);
         IRFuncMap.put("string.ord", funcOrd);
 
+        //for valueBackOpt
         libHasVal = new IRFunc("hasVal", false, false);
         libGetVal = new IRFunc("getVal", false, false);
         libSetVal = new IRFunc("setVal", false, false);
 
+        //for string operation
         libStringCmp = new IRFunc("stringCmp", false, false);
         libStringConcat = new IRFunc("stringConcat", false, false);
 
+        //for mainCall and globalVarInit
         libInit = new IRFunc("init", false, false);
 
         exMalloc = new IRFunc("malloc", false, false);
@@ -111,7 +116,7 @@ public class IRBuilder implements AstVisitor{
         for (VarDeclNode v : node.globalVarList){
             StaticData sd = new StaticData(v.name, Configuration.regSize);
             irProgram.staticDataList.add(sd);
-
+            //build vr for globalVar for later use
             VirtualRegister vr = new VirtualRegister(v.name);
             vr.spillOut = new IRMem();
             vr.spillOut.literal = sd;
@@ -125,6 +130,7 @@ public class IRBuilder implements AstVisitor{
                 allAstFunc.add(c.constructor);
         }
 
+        //init userDefFunc and main
         for (FuncDeclNode f : allAstFunc){
             ASTFuncDeclMap.put(f.symbol.name, f);
             if (!IRFuncMap.containsKey(f.symbol.name))
@@ -142,10 +148,11 @@ public class IRBuilder implements AstVisitor{
         }
 
         irProgram.IRFuncList.add(libInit);
-        libInit.usedGlobalVars = new HashSet<>(globalSymbolTable.globalinitVarSet);
+        libInit.usedGlobalVars = new HashSet<>(globalSymbolTable.globalinitVarSet); //for libInit
         curFunc = libInit;
         BasicBlock firstBB = new BasicBlock(libInit, "enter_libInit");
         curBB = curFunc.firstBB = firstBB;
+        //globalVarInit
         for (VarDeclNode v : node.globalVarList){
             if (v.init != null)
                 exprDestBuild(v.init, v.symbol.vR);
@@ -245,7 +252,7 @@ public class IRBuilder implements AstVisitor{
         VirtualRegister vr = new VirtualRegister(node.name);
         if (!isInline){
             if (isInArgs){
-                if (curFunc.paraVirtualRegs.size() >= 6)
+                if (curFunc.paraVirtualRegs.size() >= 6) //need push
                     vr.spillOut = new StackSlot(vr.vrName);
                 curFunc.paraVirtualRegs.add(vr);
             }
@@ -412,7 +419,7 @@ public class IRBuilder implements AstVisitor{
                 curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, exprSrcMap.get(node.retExpr)));
             }
         }
-        if (isInline)
+        if (isInline) //return to upper func
             curBB.pushTailInst(new IRJump(curBB, inlineFuncLeaveBBs.getLast()));
         else curBB.pushTailInst(new IRReturn(curBB));
     }
@@ -436,9 +443,8 @@ public class IRBuilder implements AstVisitor{
         IRMem mem = new IRMem();
         Operand store = null;
 
-        //arrayType
         if (node.obj.calcType instanceof TypeArray){ //array.size()
-            mem.baseReg = baseReg;
+            mem.baseReg = baseReg; //size is stored in the beginning of arraySpace
             exprSrcMap.put(node, mem);
             return;
         }
@@ -471,8 +477,7 @@ public class IRBuilder implements AstVisitor{
             }
         }
 
-        //for condition
-        if (trueDestBBMap.containsKey(node))
+        if (trueDestBBMap.containsKey(node))  //is Condition?
             curBB.pushTailInst(new IRBranch(curBB, IRBranch.Cop.NE, store, new IntImm(0),
                     trueDestBBMap.get(node), falseDestBBMap.get(node)));
         else exprSrcMap.put(node, store);
@@ -498,19 +503,19 @@ public class IRBuilder implements AstVisitor{
         if (subscript instanceof IntImm){
             store = new IRMem();
             store.baseReg = baseReg;
-            store.literal = new IntImm((((IntImm) subscript).value + 1) * Configuration.regSize);
+            store.literal = new IntImm((((IntImm) subscript).value + 1) * Configuration.regSize); //first byte is for size
         }
         else if (subscript instanceof IRRegister)
-            store = new IRMem(baseReg, (IRRegister)subscript, Configuration.regSize, new IntImm(Configuration.regSize));
+            store = new IRMem(baseReg, (IRRegister)subscript, Configuration.regSize, new IntImm(Configuration.regSize)); //base + subscript * 8 + 8
         else if (subscript instanceof IRMem){
             VirtualRegister vr = new VirtualRegister("");
             curBB.pushTailInst(new IRMove(curBB, vr ,subscript));
             store = new IRMem(baseReg, vr, Configuration.regSize, new IntImm(Configuration.regSize));
         }
-        else store = null;
+        else store = null; //assert false
 
-        //for condition
-        if (trueDestBBMap.containsKey(node))
+
+        if (trueDestBBMap.containsKey(node))//is Condition
             curBB.pushTailInst(new IRBranch(curBB, IRBranch.Cop.NE, store, new IntImm(0),
                     trueDestBBMap.get(node), falseDestBBMap.get(node)));
         else exprSrcMap.put(node, store);
@@ -520,7 +525,7 @@ public class IRBuilder implements AstVisitor{
     public void visit(FuncCallExprNode node){
         LinkedList<Operand> args = new LinkedList<>();
         if (!node.symbol.isGlobalFunc)
-            args.add(curThisPointer); //add this
+            args.add(curThisPointer); //add "this"
         for (int i = 0; i < node.argList.size(); ++i){
             node.argList.get(i).accept(this);
             args.add(exprSrcMap.get(node.argList.get(i)));
@@ -562,11 +567,11 @@ public class IRBuilder implements AstVisitor{
         }
 
         if (node.type instanceof BaseTypeNode){
-            Operand p = processNewArray(defineSizeList, 0, null); //int bool null
+            Operand p = processNewArray(defineSizeList, 0, null); //new int, bool, null
             exprSrcMap.put(node, p);
         }
         else if (node.notDefine > 0){
-            Operand p = processNewArray(defineSizeList, 0, null);
+            Operand p = processNewArray(defineSizeList, 0, null); //new pointer
             exprSrcMap.put(node, p);
         }
         else {
@@ -584,6 +589,7 @@ public class IRBuilder implements AstVisitor{
     @Override
     public void visit(UnaryExprNode node){
         if (node.uop.equals("!")){
+            //to jump to cond
             trueDestBBMap.put(node.expr, falseDestBBMap.get(node));
             falseDestBBMap.put(node.expr, trueDestBBMap.get(node));
             node.expr.accept(this);
@@ -595,7 +601,7 @@ public class IRBuilder implements AstVisitor{
             if (!(o instanceof IRStorePos))
                 throw new Error("waaaaaaagh");
             VirtualRegister last = new VirtualRegister("");
-            curBB.pushTailInst(new IRMove(curBB, last, o));
+            curBB.pushTailInst(new IRMove(curBB, last, o)); //save old value
             if (node.uop.equals("x++"))
                 curBB.pushTailInst(new IRUnary(curBB, IRUnary.Uop.INC, (IRStorePos)o));
             else curBB.pushTailInst(new IRUnary(curBB, IRUnary.Uop.DEC, (IRStorePos)o));
@@ -613,13 +619,13 @@ public class IRBuilder implements AstVisitor{
             exprSrcMap.put(node, o);
         else if (node.uop.equals("-")){
             VirtualRegister nxt = new VirtualRegister("");
-            curBB.pushTailInst(new IRMove(curBB, nxt, o));
+            curBB.pushTailInst(new IRMove(curBB, nxt, o)); //nxt = -o;
             curBB.pushTailInst(new IRUnary(curBB, IRUnary.Uop.NEG, nxt));
             exprSrcMap.put(node, nxt);
         }
         else if(node.uop.equals("~")){
             VirtualRegister nxt = new VirtualRegister("");
-            curBB.pushTailInst(new IRMove(curBB, nxt, o));
+            curBB.pushTailInst(new IRMove(curBB, nxt, o)); //nxt = ~o
             curBB.pushTailInst(new IRUnary(curBB, IRUnary.Uop.NOT, nxt));
             exprSrcMap.put(node, nxt);
         }
@@ -761,6 +767,7 @@ public class IRBuilder implements AstVisitor{
         }
     }
 
+    //for inlineOpt
     private int countOp(ExprNode expr){
         int count = 0;
         if (expr == null)
@@ -850,8 +857,8 @@ public class IRBuilder implements AstVisitor{
     }
 
     private void buildInlineOpt(FuncSymbol f, LinkedList<Operand> args){
-        HashMap<VarSymbol, VirtualRegister> varMap = new HashMap<>();
-        inlineVarRegMaps.addLast(varMap);
+        //build new vRegs and init them
+        inlineVarRegMaps.addLast(new HashMap<>());
         LinkedList<VirtualRegister> argVregs = new LinkedList<>();
         for (Operand o : args){
             VirtualRegister vr = new VirtualRegister("");
@@ -861,7 +868,7 @@ public class IRBuilder implements AstVisitor{
 
         FuncDeclNode func = ASTFuncDeclMap.get(f.name);
         for (int i = 0; i < func.parameterList.size(); ++i)
-            varMap.put(func.parameterList.get(i).symbol, argVregs.get(i));
+            inlineVarRegMaps.getLast().put(func.parameterList.get(i).symbol, argVregs.get(i));
 
         BasicBlock funcLeaveBB = new BasicBlock(curFunc, "inlineLeaveOf_"+f.name);
         inlineFuncLeaveBBs.addLast(funcLeaveBB);
@@ -883,7 +890,7 @@ public class IRBuilder implements AstVisitor{
     }
 
     private Operand processNewArray(LinkedList<Operand> defineSizeList, int size, IRFunc consturctor){
-        //for recursiveCall
+        //for recursive
         if (defineSizeList.size() == 0){
             if (size == 0) //rest > 0
                 return new IntImm(0);
@@ -919,24 +926,26 @@ public class IRBuilder implements AstVisitor{
             VirtualRegister indexReg = new VirtualRegister("");
             VirtualRegister sizeReg = new VirtualRegister("");
             IRMem src = new IRMem(), addr = new IRMem();
-            //get mallocSize
+            //how many pointer and their size
             curBB.pushTailInst(new IRMove(curBB, indexReg, defineSizeList.get(0)));
             src.indexReg = indexReg;
             src.scale = Configuration.regSize;
-            src.literal = new IntImm(Configuration.regSize);
-            curBB.pushTailInst(new IRLea(curBB, sizeReg, src));
+            src.literal = new IntImm(Configuration.regSize); //space to save how many pointer
+            curBB.pushTailInst(new IRLea(curBB, sizeReg, src)); //size = index * 8 + 8
             //malloc
             curBB.pushTailInst(new IRFuncCall(curBB, RegCollection.vrax, exMalloc, sizeReg));
             curBB.pushTailInst(new IRMove(curBB, pointer, RegCollection.vrax));
             addr.baseReg = pointer;
-            curBB.pushTailInst(new IRMove(curBB, addr, indexReg));
+            curBB.pushTailInst(new IRMove(curBB, addr, indexReg)); //save how many pointer
 
+            //for recursive
             BasicBlock condBB = new BasicBlock(curFunc, "newArrayCondBB");
             BasicBlock bodyBB = new BasicBlock(curFunc, "newArrayBodyBB");
             BasicBlock leaveBB = new BasicBlock(curFunc, "newARrayLeaveBB");
             curBB.pushTailInst(new IRJump(curBB, condBB));
 
             curBB = condBB;
+            //new end?
             curBB.pushTailInst(new IRBranch(curBB, IRBranch.Cop.G, indexReg, new IntImm(0), bodyBB, leaveBB));
 
             curBB = bodyBB;
@@ -965,6 +974,7 @@ public class IRBuilder implements AstVisitor{
     }
 
     private void processLogicalBop(BinaryExprNode node){
+        //condition
         BasicBlock checkNxtCondBB = new BasicBlock(curFunc, "checkNxtCondBB");
         if (node.bop.equals("&&")){
             trueDestBBMap.put(node.lt, checkNxtCondBB);
@@ -989,6 +999,7 @@ public class IRBuilder implements AstVisitor{
         Operand rt = exprSrcMap.get(node.rt);
         IRStorePos store = new VirtualRegister("");
 
+        //string
         if (node.lt.calcType instanceof TypeCustom && ((TypeCustom) node.lt.calcType).name.equals("string") && node.bop.equals("+")){
             if (lt instanceof IRMem && !(lt instanceof StackSlot)){
                 VirtualRegister vrlt = new VirtualRegister("");
@@ -1006,6 +1017,7 @@ public class IRBuilder implements AstVisitor{
             return;
         }
 
+        //just like mul in asmFile
         if (node.bop.equals("*")){
             IRBinary.Bop bop = IRBinary.Bop.MUL;
             curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, lt));
@@ -1017,7 +1029,7 @@ public class IRBuilder implements AstVisitor{
         if (node.bop.equals("/")){
             IRBinary.Bop bop = IRBinary.Bop.DIV;
             curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, lt));
-            curBB.pushTailInst(new IRCdq(curBB)); //for divOp
+            curBB.pushTailInst(new IRCdq(curBB)); //extends rt
             curBB.pushTailInst(new IRBinary(curBB, bop, null, rt));
             curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrax));
             exprSrcMap.put(node, store);
@@ -1026,7 +1038,7 @@ public class IRBuilder implements AstVisitor{
         if (node.bop.equals("%")){
             IRBinary.Bop bop = IRBinary.Bop.MOD;
             curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, lt));
-            curBB.pushTailInst(new IRCdq(curBB)); //for divOp
+            curBB.pushTailInst(new IRCdq(curBB)); //extends rt
             curBB.pushTailInst(new IRBinary(curBB, bop, null, rt));
             curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrdx));
             exprSrcMap.put(node, store);
@@ -1059,6 +1071,7 @@ public class IRBuilder implements AstVisitor{
                 break;
         }
 
+        //do not need move!
         if (lt == dest){
             store = dest;
             if (node.bop.equals(">>") || node.bop.equals("<<")){
@@ -1068,8 +1081,8 @@ public class IRBuilder implements AstVisitor{
             else
                 curBB.pushTailInst(new IRBinary(curBB, bop, store, rt));
         }
+        //can revert lt and rt?
         else if (rt == dest && (!(node.bop.equals("-"))) && (!(node.bop.equals("<<"))) && (!(node.bop.equals(">>")))){
-            //can revert lt and rt
             store = dest;
             curBB.pushTailInst(new IRBinary(curBB, bop, store, lt));
         }
@@ -1115,6 +1128,7 @@ public class IRBuilder implements AstVisitor{
                 cop = IRBranch.Cop.LE;
                 break;
         }
+        //string
         if (node.lt.calcType instanceof TypeCustom && ((TypeCustom) node.lt.calcType).name.equals("string")){
             curBB.pushTailInst(new IRFuncCall(curBB, RegCollection.vrax, libStringCmp, lt, rt));
             curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrax));
@@ -1130,6 +1144,7 @@ public class IRBuilder implements AstVisitor{
         }
         BasicBlock trueBB = trueDestBBMap.get(node);
         BasicBlock falseBB = falseDestBBMap.get(node);
+        //for condition
         if (trueBB != null && falseBB != null)
             curBB.pushTailInst(new IRBranch(curBB, cop, lt, rt, trueBB, falseBB));
     }

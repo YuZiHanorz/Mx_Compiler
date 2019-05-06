@@ -30,7 +30,6 @@ public class IRFunc {
 
     public HashSet<IRFunc> calleeFuncs;
     public HashSet<VarSymbol> recursiveUsedGlobalVars;
-    public HashSet<PhysicalRegister> recursiveUsedPhysicalRegs;
 
     public LinkedList<VirtualRegister> paraVirtualRegs;
 
@@ -45,7 +44,6 @@ public class IRFunc {
         this.usedPhysicalRegs = new HashSet<>();
         this.calleeFuncs = new HashSet<>();
         this.recursiveUsedGlobalVars = new HashSet<>();
-        this.recursiveUsedPhysicalRegs = new HashSet<>();
         this.paraVirtualRegs = new LinkedList<>();
 
         if (!isCustom && !funcName.equals("init")){
@@ -53,7 +51,6 @@ public class IRFunc {
                 if (reg.name.equals("rsp") || reg.name.equals("rbp"))
                     continue;
                 this.usedPhysicalRegs.add(reg);
-                this.recursiveUsedPhysicalRegs.add(reg);
             }
         }
     }
@@ -98,25 +95,21 @@ public class IRFunc {
                 }
                 if (i instanceof IRBinary){
                     IRBinary.Bop op = ((IRBinary) i).bop;
-                    if (op != IRBinary.Bop.MUL && op != IRBinary.Bop.DIV && op != IRBinary.Bop.MOD)
+                    if (op != IRBinary.Bop.MUL && op != IRBinary.Bop.DIV && op != IRBinary.Bop.MOD){
+                        usedPhysicalRegs.addAll(toPreg(i.getDefRegs()));
+                        usedPhysicalRegs.addAll(toPreg(i.getUsedRegs()));
                         continue;
+                    }
                     usedPhysicalRegs.add(RegCollection.rax);
                     usedPhysicalRegs.add(RegCollection.rdx);
                     if (((IRBinary) i).rt instanceof IRRegister)
                         usedPhysicalRegs.add((PhysicalRegister) ((IRBinary) i).rt);
                     continue;
                 }
-                LinkedList<PhysicalRegister> pRegList = new LinkedList<>();
-                for(IRRegister reg : i.getUsedRegs()){
-                    pRegList.add((PhysicalRegister)reg);
-                }
-                for (IRRegister reg : i.getDefRegs()){
-                    pRegList.add((PhysicalRegister)reg);
-                }
-                usedPhysicalRegs.addAll(pRegList);
+                usedPhysicalRegs.addAll(toPreg(i.getDefRegs()));
+                usedPhysicalRegs.addAll(toPreg(i.getUsedRegs()));
             }
         }
-        calcRecursiveUsedPhysicalRegs();
 
     }
 
@@ -149,15 +142,6 @@ public class IRFunc {
         recursiveUsedGlobalVars.addAll(f.usedGlobalVars);
     }
 
-    private void dfsRecursiveUsedPhysicalRegs(IRFunc f){
-        if (dfsVisitedFunc.contains(f))
-            return;
-        dfsVisitedFunc.add(f);
-        for (IRFunc func : f.calleeFuncs)
-            dfsRecursiveUsedPhysicalRegs(func);
-        recursiveUsedPhysicalRegs.addAll(f.recursiveUsedPhysicalRegs);
-    }
-
     private void calcReversePostOrder(){
         dfsVisitedBB = new HashSet<>();
         reversePostOrder.clear();
@@ -176,10 +160,11 @@ public class IRFunc {
         dfsRecursiveUsedGlobalVars(this);
     }
 
-    private void calcRecursiveUsedPhysicalRegs(){
-        dfsVisitedFunc = new HashSet<>();
-        recursiveUsedPhysicalRegs.clear();
-        dfsRecursiveUsedPhysicalRegs(this);
+    private LinkedList<PhysicalRegister> toPreg(LinkedList<IRRegister> regs){
+        LinkedList<PhysicalRegister> pRegs = new LinkedList<>();
+        for (IRRegister reg : regs)
+            pRegs.add((PhysicalRegister) reg);
+        return pRegs;
     }
 
     public void accept(IRVisitor visitor) {

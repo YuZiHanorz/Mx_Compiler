@@ -42,7 +42,8 @@ public class SimpleRegisterAllocator {
                 allRegs.addAll(i.getUsedRegs());
                 allRegs.addAll(i.getDefRegs());
                 HashMap<IRRegister, IRRegister> renameMap = new HashMap<>();
-
+                LinkedList<IRRegister> used = i.getUsedRegs();
+                LinkedList<IRRegister> def = i.getDefRegs();
 
                 for (IRRegister reg : allRegs){
                     if (reg instanceof VirtualRegister){
@@ -91,8 +92,7 @@ public class SimpleRegisterAllocator {
                 }
                 i.renameDefReg(renameMap);
                 i.renameUsedReg(renameMap);
-                LinkedList<IRRegister> used = i.getUsedRegs();
-                LinkedList<IRRegister> def = i.getDefRegs();
+
                 for (IRRegister reg : used){
                     if (reg instanceof VirtualRegister) {
                         if (((VirtualRegister) reg).allocPhysicalReg == null)

@@ -25,8 +25,8 @@ public class NASMTransformer {
             argList = new LinkedList<>();
             tmpList = new LinkedList<>();
         }
-        public int getSize(){
-            int size = (argList.size() + tmpList.size()) *Configuration.regSize;
+        public int rspSub(){
+            int size = (tmpList.size()) *Configuration.regSize;
             return (size +15) /16 * 16;
         }
     }
@@ -52,7 +52,7 @@ public class NASMTransformer {
 
         for (int i = vArgList.size()-1; i >= 0; --i){
             if (i < 6) break;
-            //need to push into stack
+            //need to push into stack in caller
             stack.argList.add((StackSlot) vArgList.get(i).spillOut);
         }
         for (BasicBlock bb : f.sonBB){
@@ -66,7 +66,7 @@ public class NASMTransformer {
             }
         }
 
-        //put args to [rbp + 16 + 8 * i]
+        //restArgs : [rbp + 16 + 8 * i]
         for (int i = 0; i < stack.argList.size(); ++i){
             StackSlot ss = stack.argList.get(i);
             assert ss.baseReg == null && ss.literal == null;
@@ -74,7 +74,7 @@ public class NASMTransformer {
             ss.literal = new IntImm(16 + 8 * i);
         }
 
-        //put tmp vars to [rbp - 8 -8 * i]
+        //tmpVars: [rbp - 8 -8 * i]
         for (int i = 0; i < stack.tmpList.size(); ++i){
             StackSlot ss = stack.tmpList.get(i);
             assert ss.baseReg == null && ss.literal == null;
@@ -82,22 +82,21 @@ public class NASMTransformer {
             ss.literal = new IntImm(-8 - 8 * i);
         }
 
-        //put rsp to stackPeek
         BasicBlock firstBB = f.firstBB;
         IRInst firstInst = firstBB.firstInst;
-        firstInst.prependInst(new IRPush(firstBB, RegCollection.rbp));
+        firstInst.prependInst(new IRPush(firstBB, RegCollection.rbp)); //save caller's rbp
         firstInst.prependInst(new IRMove(firstBB, RegCollection.rbp, RegCollection.rsp));
-        firstInst.prependInst(new IRBinary(firstBB, IRBinary.Bop.SUB, RegCollection.rsp, new IntImm(stack.getSize())));
+        firstInst.prependInst(new IRBinary(firstBB, IRBinary.Bop.SUB, RegCollection.rsp, new IntImm(stack.rspSub())));
         HashSet<PhysicalRegister> needSave = new HashSet<>(f.usedPhysicalRegs);
-        needSave.retainAll(RegCollection.calleeSaveRegList); //find pReg that need save
+        needSave.retainAll(RegCollection.calleeSaveRegList); //find pReg that the func need save when being callee
         firstInst = firstInst.prevInst;
         for (PhysicalRegister pReg : needSave)
-            firstInst.appendInst(new IRPush(firstBB, pReg)); //push them into stack
+            firstInst.appendInst(new IRPush(firstBB, pReg)); //push pn, pn-1....p1
 
         IRReturn r = (IRReturn) f.lastBB.lastInst;
         for (PhysicalRegister pReg : needSave)
-            r.prependInst(new IRPop(r.parentBB, pReg));
-        r.prependInst(new IRLeave(r.parentBB));
+            r.prependInst(new IRPop(r.parentBB, pReg));  //pop p1, p2.....pn
+        r.prependInst(new IRLeave(r.parentBB)); //leave and ret(get back)
     }
 
 

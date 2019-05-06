@@ -23,8 +23,8 @@ public class IRPush extends IRInst{
 
         if (src instanceof IRMem)
             list.addAll(((IRMem) src).getUsedRegs());
-        //else if (src instanceof IRRegister)
-        //list.add((IRRegister) src);
+        else if (src instanceof IRRegister)
+            list.add((IRRegister) src);
 
         return list;
     }
@@ -32,8 +32,8 @@ public class IRPush extends IRInst{
     @Override
     public LinkedList<IRRegister> getDefRegs(){
         LinkedList<IRRegister> list = new LinkedList<>();
-        if (src instanceof IRRegister)
-            list.add((IRRegister)src);
+        //if (src instanceof IRRegister)
+            //list.add((IRRegister)src);
         return list;
     }
 
@@ -48,15 +48,14 @@ public class IRPush extends IRInst{
             src = ((IRMem) src).copy();
             ((IRMem) src).renameUsedReg(renameMap);
         }
-        //else if (src instanceof IRRegister && renameMap.containsKey(src))
-        //src = renameMap.get(src);
+        else if (src instanceof IRRegister && renameMap.containsKey(src))
+            src = renameMap.get(src);
 
     }
 
     @Override
     public void renameDefReg(HashMap<IRRegister, IRRegister> renameMap){
-        if (src instanceof IRRegister && renameMap.containsKey(src))
-            src = renameMap.get(src);
+        
     }
 
     @Override

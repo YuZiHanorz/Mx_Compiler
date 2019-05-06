@@ -11,6 +11,7 @@ import java.util.LinkedList;
 //All virtual registers store in memory
 //Fetch into physical register when needed
 //store back after operation
+//with many bug, but I do not wanna debug
 public class SimpleRegisterAllocator {
     public IRProgram irProgram;
     public LinkedList<PhysicalRegister> almightyRegList;
@@ -41,8 +42,7 @@ public class SimpleRegisterAllocator {
                 allRegs.addAll(i.getUsedRegs());
                 allRegs.addAll(i.getDefRegs());
                 HashMap<IRRegister, IRRegister> renameMap = new HashMap<>();
-                LinkedList<IRRegister> used = i.getUsedRegs();
-                LinkedList<IRRegister> def = i.getDefRegs();
+
 
                 for (IRRegister reg : allRegs){
                     if (reg instanceof VirtualRegister){
@@ -91,7 +91,8 @@ public class SimpleRegisterAllocator {
                 }
                 i.renameDefReg(renameMap);
                 i.renameUsedReg(renameMap);
-
+                LinkedList<IRRegister> used = i.getUsedRegs();
+                LinkedList<IRRegister> def = i.getDefRegs();
                 for (IRRegister reg : used){
                     if (reg instanceof VirtualRegister) {
                         if (((VirtualRegister) reg).allocPhysicalReg == null)

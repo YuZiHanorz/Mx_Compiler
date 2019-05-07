@@ -253,7 +253,7 @@ public class NASMPrinter implements IRVisitor {
 
     @Override
     public void visit(IRPop instNode){
-        append("\tpop");
+        append("\tpop ");
         instNode.dest.accept(this);
         append("\n");
     }

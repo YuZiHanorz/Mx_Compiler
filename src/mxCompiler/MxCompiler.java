@@ -25,7 +25,7 @@ import static java.lang.System.exit;
 public class MxCompiler {
 
     public static void main(String[] args) throws IOException {
-        boolean debug = true;
+        boolean debug = false;
         CharStream input;
         if (debug){
             String filename = "program.cpp";

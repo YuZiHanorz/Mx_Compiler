@@ -84,6 +84,7 @@ public class IRFunc {
         calcRecursiveUsedGlobalVars();
     }
 
+    //make out func's using regs
     public void allocate(){
         for (BasicBlock b : sonBB){
             for (IRInst i = b.firstInst; i != null; i = i.nxtInst) {
@@ -110,7 +111,6 @@ public class IRFunc {
                 usedPhysicalRegs.addAll(toPreg(i.getUsedRegs()));
             }
         }
-
     }
 
     private HashSet<BasicBlock> dfsVisitedBB = null;

@@ -61,7 +61,11 @@ public class IRBinary extends IRInst{
         LinkedList<IRRegister> list = new LinkedList<>();
         if (dest instanceof IRRegister)
             list.add((IRRegister) dest);
-        if (bop == Bop.MUL || bop == Bop.DIV || bop == Bop.MOD){
+        if (bop == Bop.MUL){
+            if (!list.contains(RegCollection.vrax))
+                list.add(RegCollection.vrax);
+        }
+        else if (bop == Bop.DIV || bop == Bop.MOD){
             if (!list.contains(RegCollection.vrax))
                 list.add(RegCollection.vrax);
             if (!list.contains(RegCollection.vrdx))

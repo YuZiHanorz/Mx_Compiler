@@ -32,6 +32,7 @@ public class LivelinessAnalyzer {
 
     public void buildInferenceGraph(){
         buildLiveOut();
+        interferenceGraph.clear();
 
         //init interference graph with no edge
         for (BasicBlock bb : func.sonBB){
@@ -108,4 +109,5 @@ public class LivelinessAnalyzer {
             }
         }
     }
+
 }

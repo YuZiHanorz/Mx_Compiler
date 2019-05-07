@@ -14,6 +14,8 @@ public class RegisterAllocator {
     public IRProgram irProgram;
     public LinkedList<PhysicalRegister> almightyRegList;
 
+    private LivelinessAnalyzer livelinessAnalyzer = null;
+    private IRPrinter irPrinter = new IRPrinter();
     private IRFunc curFunc = null;
 
     //interference graph
@@ -39,13 +41,16 @@ public class RegisterAllocator {
     }
 
     //show interference graph for debug
-    /*private void dump() {
-        IRPrinter irPrinter = new IRPrinter();
+    private void dump() {
+        irPrinter.strBuilder = new StringBuilder();
+        irPrinter.sdNameMap = new HashMap<>();
+        irPrinter.vrNameMap = new HashMap<>();
+        irPrinter.bbNameMap = new HashMap<>();
+        irPrinter.ssNameMap = new HashMap<>();
+        irPrinter.inLea = false;
         irPrinter.visit(curFunc);
         irPrinter.printTo(System.err);
 
-        LivelinessAnalyzer livelinessAnalyzer = new LivelinessAnalyzer(curFunc);
-        livelinessAnalyzer.buildInferenceGraph();
         System.err.println("LiveOut:");
         for(BasicBlock bb : curFunc.reversePostOrder) {
             System.err.print(irPrinter.bbNameMap.get(bb) + ": ");
@@ -62,16 +67,14 @@ public class RegisterAllocator {
             System.err.print("\n");
         }
         System.err.print("\n\n\n");
-    }*/
+    }
 
     public void build(){
         for (IRFunc f : irProgram.IRFuncList){
-            curFunc = f;
+            this.curFunc = f;
             processIRFunc();
         }
     }
-
-
 
 
     /*While True:
@@ -87,25 +90,26 @@ public class RegisterAllocator {
     */
     private void processIRFunc(){
        while (true){
-            LivelinessAnalyzer livelinessAnalyzer = new LivelinessAnalyzer(curFunc);
+            livelinessAnalyzer = new LivelinessAnalyzer(curFunc);
             livelinessAnalyzer.buildInferenceGraph(); //rebuild the graph after real spill
             graph = livelinessAnalyzer.interferenceGraph;
-            newGraph = copy(graph);
-
+            copy();
+            //dump();
             reset();
-            while (!mayCanSimplify.isEmpty() || !mayNeedSpill.isEmpty()){
+           do {
                 if (!mayCanSimplify.isEmpty())
                     doSimplify();
-                else potentialSpill(); //every node's degree >= k
-            }
+                else if (!mayNeedSpill.isEmpty())
+                    potentialSpill();
+            } while (!mayCanSimplify.isEmpty() || !mayNeedSpill.isEmpty());
             assignColour();
 
             //System.err.print("current colour: \n");
             //for (HashMap.Entry<VirtualRegister, PhysicalRegister> entry : colourMap.entrySet())
-            //   System.err.print("vr<" + entry.getKey().vrName + "> : " + "pr<" + entry.getValue().name + ">\n");
+               //System.err.print("vr<" + entry.getKey().vrName + "> : " + "pr<" + entry.getValue().name + ">\n");
             //System.err.print("current spill: \n");
             //for (VirtualRegister vr : spilled)
-            //    System.err.print("vr<" + vr.vrName + ">\t");
+                //System.err.print("vr<" + vr.vrName + ">\t");
 
             if (spilled.isEmpty()) { //success
                 doRename();
@@ -147,7 +151,7 @@ public class RegisterAllocator {
     private void potentialSpill(){
         VirtualRegister spillNode = null;
         int max, cur; //select the node with max degree
-        max = -1000;
+        max = -2;
         for (VirtualRegister vr : mayNeedSpill){
             if (vr.allocPhysicalReg != null) //never spill preColoured node unless all is done
                 cur = -1;
@@ -218,10 +222,13 @@ public class RegisterAllocator {
                 LinkedList<VirtualRegister> def = new LinkedList<>(toVreg(i.getDefRegs()));
                 used.retainAll(spilled);
                 def.retainAll(spilled);
-                LinkedList<VirtualRegister> all = new LinkedList<>(used);
-                all.addAll(def);
 
-                for (VirtualRegister vr : all){
+                for (VirtualRegister vr : used){
+                    if (renameMap.containsKey(vr))
+                        continue;
+                    renameMap.put(vr, new VirtualRegister(""));
+                }
+                for (VirtualRegister vr : def){
                     if (renameMap.containsKey(vr))
                         continue;
                     renameMap.put(vr, new VirtualRegister(""));
@@ -260,29 +267,27 @@ public class RegisterAllocator {
     }
 
     //substitute for g = new HashMap(g1), build a new HashSet for each node
-    private HashMap<VirtualRegister, HashSet<VirtualRegister>> copy(HashMap<VirtualRegister, HashSet<VirtualRegister>> g){
-        HashMap<VirtualRegister, HashSet<VirtualRegister>> g1 = new HashMap<>();
-        for (VirtualRegister vr : g.keySet()){
-            if (!g.containsKey(vr))
-                throw new Error("wtf with the map");
-            HashSet<VirtualRegister> val = new HashSet<>(g.get(vr));
-            g1.put(vr, val);
+    private void copy(){
+        newGraph = new HashMap<>();
+        for (VirtualRegister vr : graph.keySet()){
+            newGraph.put(vr, new HashSet<>(getGAdjacent(vr)));
         }
-        return g1;
     }
 
     //graph operation
     private Collection<VirtualRegister> getGAdjacent(VirtualRegister node){
-        if (!graph.containsKey(node))
-            return new HashSet<>();
-        else return graph.get(node);
+        //if (!graph.containsKey(node))
+            //return new HashSet<>();
+        //else return graph.get(node);
+        return graph.getOrDefault(node, new HashSet<>());
     }
 
     //new graph operation
     private Collection<VirtualRegister> getNGAdjacent(VirtualRegister node){
-        if (!newGraph.containsKey(node))
-            return new HashSet<>();
-        else return newGraph.get(node);
+        //if (!newGraph.containsKey(node))
+            //return new HashSet<>();
+        //else return newGraph.get(node);
+        return newGraph.getOrDefault(node, new HashSet<>());
     }
 
     private int getNGDegree(VirtualRegister node){

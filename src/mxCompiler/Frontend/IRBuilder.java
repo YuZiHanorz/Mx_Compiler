@@ -677,6 +677,8 @@ public class IRBuilder implements AstVisitor{
             if (isInline)
                 op = inlineVarRegMaps.getLast().get(node.symbol);
             else op = node.symbol.vR;
+            if (node.symbol.isGlobal)
+                curFunc.usedGlobalVars.add(node.symbol);
         }
         else {
             op = new IRMem();

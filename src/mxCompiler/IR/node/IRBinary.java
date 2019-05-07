@@ -64,8 +64,8 @@ public class IRBinary extends IRInst{
         if (bop == Bop.MUL){
             if (!list.contains(RegCollection.vrax))
                 list.add(RegCollection.vrax);
-            if (!list.contains(RegCollection.vrdx))
-                list.add(RegCollection.vrdx);
+            //if (!list.contains(RegCollection.vrdx))
+                //list.add(RegCollection.vrdx);
         }
         else if (bop == Bop.DIV || bop == Bop.MOD){
             if (!list.contains(RegCollection.vrax))

@@ -419,9 +419,10 @@ public class IRBuilder implements AstVisitor{
                 curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, exprSrcMap.get(node.retExpr)));
             }
         }
-        if (isInline) //return to upper func
+        if (!isInline)
+            curBB.pushTailInst(new IRReturn(curBB));
+        else //return to upper func
             curBB.pushTailInst(new IRJump(curBB, inlineFuncLeaveBBs.getLast()));
-        else curBB.pushTailInst(new IRReturn(curBB));
     }
 
     @Override
@@ -674,9 +675,9 @@ public class IRBuilder implements AstVisitor{
         if (node.name.equals("this"))
             op = curThisPointer;
         else if (!node.symbol.isClassMember) {
-            if (isInline)
-                op = inlineVarRegMaps.getLast().get(node.symbol);
-            else op = node.symbol.vR;
+            if (!isInline)
+                op = node.symbol.vR;
+            else op = inlineVarRegMaps.getLast().get(node.symbol);
             if (node.symbol.isGlobal)
                 curFunc.usedGlobalVars.add(node.symbol);
         }
@@ -848,14 +849,16 @@ public class IRBuilder implements AstVisitor{
     private boolean needInlineOpt(FuncSymbol f){
         if (!Configuration.useInlineOpt || !ASTFuncDeclMap.containsKey(f.name))
             return false;
+        FuncDeclNode func = ASTFuncDeclMap.get(f.name);
+        if (f != func.symbol)
+            throw new Error("what what what funcSymbol");
         if (!f.globalVarSet.isEmpty() || !f.isGlobalFunc)
             return false;
-        FuncDeclNode func = ASTFuncDeclMap.get(f.name);
         if (!funcOpCntMap.containsKey(f))
             funcOpCntMap.put(f, countOp(func.block));
         if (funcOpCntMap.get(f) >= Configuration.inlineOpCnt)
             return false;
-        return inlineVarRegMaps.size() <= Configuration.inlineMaxDepth;
+        return inlineVarRegMaps.size() < Configuration.inlineMaxDepth;
     }
 
     private void buildInlineOpt(FuncSymbol f, LinkedList<Operand> args){
@@ -869,6 +872,8 @@ public class IRBuilder implements AstVisitor{
         }
 
         FuncDeclNode func = ASTFuncDeclMap.get(f.name);
+        if (f != func.symbol)
+            throw new Error("what what is this funcSymbol");
         for (int i = 0; i < func.parameterList.size(); ++i)
             inlineVarRegMaps.getLast().put(func.parameterList.get(i).symbol, argVregs.get(i));
 

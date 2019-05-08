@@ -46,11 +46,9 @@ public class IRBuilder implements AstVisitor{
     public boolean isInline = false;
     public LinkedList<HashMap<VarSymbol, VirtualRegister>> inlineVarRegMaps;
     public LinkedList<BasicBlock> inlineFuncLeaveBBs;
-
     public HashMap<FuncSymbol ,Integer> funcOpCntMap;
 
     //some LibFunc
-    private static IRFunc libHasVal, libSetVal, libGetVal;
     private static IRFunc libStringCmp, libStringConcat;
     private static IRFunc libInit;
     private static IRFunc exMalloc;
@@ -96,11 +94,6 @@ public class IRBuilder implements AstVisitor{
         IRFuncMap.put("string.parseInt", funcParseInt);
         IRFuncMap.put("string.ord", funcOrd);
 
-        //for valueBackOpt
-        libHasVal = new IRFunc("hasVal", false, false);
-        libGetVal = new IRFunc("getVal", false, false);
-        libSetVal = new IRFunc("setVal", false, false);
-
         //for string operation
         libStringCmp = new IRFunc("stringCmp", false, false);
         libStringConcat = new IRFunc("stringConcat", false, false);
@@ -142,6 +135,7 @@ public class IRBuilder implements AstVisitor{
         for (ClassDeclNode c : node.globalClassList)
             c.accept(this);
 
+        //finish building CFG
         for (IRFunc f : IRFuncMap.values()){
             if (f.isCustom)
                 f.build();

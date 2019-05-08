@@ -32,6 +32,8 @@ public class MxCompiler {
             Configuration.fin = new FileInputStream(filename);
             //Configuration.printAST = true;
             Configuration.printIR = true;
+            Configuration.printIRAfterRescan = true;
+            Configuration.printIRAfterAllocate = true;
             Configuration.printAsmFile = true;
             input = CharStreams.fromStream(Configuration.fin); //debug
         }
@@ -93,7 +95,7 @@ public class MxCompiler {
         IRRescanner irRescanner = new IRRescanner();
         irProgram.accept(irRescanner);
 
-        if (Configuration.printIR){
+        if (Configuration.printIRAfterRescan){
             System.err.println("------------------------");
             System.err.println("Print IR after rescanning:\n");
             IRPrinter irPrinter = new IRPrinter();
@@ -103,7 +105,7 @@ public class MxCompiler {
         RegisterAllocator registerAllocator = new RegisterAllocator(irProgram);
         registerAllocator.build();
 
-        if (Configuration.printIR){
+        if (Configuration.printIRAfterAllocate){
             System.err.println("------------------------");
             System.err.println("Print IR after allocation:\n");
             IRPrinter irPrinter = new IRPrinter();
@@ -125,6 +127,30 @@ public class MxCompiler {
         nasmPrinter.visit(irProgram);
         nasmPrinter.printTo(System.out);
     }
+
+    /*private static void printHelpInfo(){
+        System.out.println("This is a uncompleted, somewhat silly compiler for Mx* Language\n");
+        System.out.println("\tUsage:  Mx_Compiler [--printAST] [source] [-o file]");
+        System.out.println("\tSource default is program.cpp");
+        System.out.println("\toutput default is [inputName].asm");
+        System.out.println("\t--printAST print the abstract syntax tree");
+    }
+
+    private static void needHelp(){
+        System.out.println("It seems that you need some little help\n");
+        printHelpInfo();
+        exit(0);
+    }
+
+    private static String output(String input){
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < input.length(); ++i){
+            str.append(input.charAt(i));
+            if (input.charAt(i) == '.') break;
+        }
+        str.append("asm");
+        return str.toString();
+    }*/
 
     private static void checkError(ErrorTable errorTable){
         if (errorTable.somethingWrong()){

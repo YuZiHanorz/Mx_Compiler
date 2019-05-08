@@ -15,6 +15,6 @@ public class Configuration {
     public static boolean simple = false;
 
     public static boolean useInlineOpt = false;
-    public static int inlineMaxDepth = 3;
+    public static int inlineMaxDepth = 5;
     public static int inlineOpCnt = 20;
 }

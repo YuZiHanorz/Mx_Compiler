@@ -84,6 +84,10 @@ public class MxCompiler {
             ConstFolderOpt constFolderOpt = new ConstFolderOpt();
             ast.accept(constFolderOpt);
         }
+        if (Configuration.useIrrelevantLoopOpt){
+            IrrelevantLoopOpt irrelevantLoopOpt = new IrrelevantLoopOpt();
+            ast.accept(irrelevantLoopOpt);
+        }
 
         IRBuilder irBuilder = new IRBuilder(globalSymbolTable);
         ast.accept(irBuilder);

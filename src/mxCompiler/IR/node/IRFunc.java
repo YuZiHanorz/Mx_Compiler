@@ -85,7 +85,7 @@ public class IRFunc {
     }
 
     //make out func's using regs
-    public void allocate(){
+    public void calcUsingPreg(){
         for (BasicBlock b : sonBB){
             for (IRInst i = b.firstInst; i != null; i = i.nxtInst) {
                 if (i instanceof IRReturn)

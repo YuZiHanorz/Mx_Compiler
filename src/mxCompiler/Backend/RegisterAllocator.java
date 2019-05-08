@@ -117,7 +117,7 @@ public class RegisterAllocator {
             }
             else realSpill();
        }
-       curFunc.allocate();
+       curFunc.calcUsingPreg();
     }
 
     private void reset(){

@@ -1138,6 +1138,7 @@ public class IRBuilder implements AstVisitor{
             BasicBlock falseBB = falseDestBBMap.get(node);
             if (trueBB != null && falseBB != null)
                 curBB.pushTailInst(new IRBranch(curBB, cop, store, new IntImm(0), trueBB, falseBB));
+            else exprSrcMap.put(node, store);
             return;
         }
         if (lt instanceof IRMem && rt instanceof IRMem){
@@ -1149,6 +1150,7 @@ public class IRBuilder implements AstVisitor{
         //for condition
         if (trueBB != null && falseBB != null)
             curBB.pushTailInst(new IRBranch(curBB, cop, lt, rt, trueBB, falseBB));
+        else exprSrcMap.put(node, store);
     }
 
 

@@ -14,7 +14,7 @@ public class Configuration {
     public static int regSize = 8;
     public static boolean simple = false;
 
-    public static boolean useInlineOpt = false;
+    public static boolean useInlineOpt = true;
     public static int inlineMaxDepth = 5;
     public static int inlineOpCnt = 20;
 }

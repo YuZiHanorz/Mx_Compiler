@@ -251,6 +251,7 @@ public class AstBuilder extends MxBaseVisitor<Node>{
         WhileStmtNode whileStmt = new WhileStmtNode();
         whileStmt.location = new Location(ctx);
         whileStmt.condition = (ExprNode) visit(ctx.expr());
+        whileStmt.condition.parent = whileStmt;
         whileStmt.body = (StmtNode) visit(ctx.statement());
         return whileStmt;
     }
@@ -259,10 +260,14 @@ public class AstBuilder extends MxBaseVisitor<Node>{
     public Node visitForStatement(MxParser.ForStatementContext ctx){
         ForStmtNode forStmt = new ForStmtNode();
         forStmt.location = new Location(ctx);
-        if (ctx.forInit != null)
+        if (ctx.forInit != null) {
             forStmt.init = (ExprNode) visit(ctx.forInit);
-        if (ctx.forCondition != null)
+            forStmt.init.parent = forStmt;
+        }
+        if (ctx.forCondition != null) {
             forStmt.condition = (ExprNode) visit(ctx.forCondition);
+            forStmt.condition.parent = forStmt;
+        }
         if (ctx.forStep != null)
             forStmt.step = (ExprNode) visit(ctx.forStep);
         forStmt.body = (StmtNode) visit(ctx.statement());

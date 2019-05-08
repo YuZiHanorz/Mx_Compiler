@@ -6,4 +6,5 @@ abstract public class ExprNode extends Node{
     public TypeType calcType = null;
     public boolean isLvalue;
     public boolean toConst = false;
+    public int val;
 }

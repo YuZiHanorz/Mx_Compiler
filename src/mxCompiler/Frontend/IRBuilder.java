@@ -1001,8 +1001,8 @@ public class IRBuilder implements AstVisitor{
 
     private void processArithBop(BinaryExprNode node){
         node.lt.accept(this);
-        node.rt.accept(this);
         Operand lt = exprSrcMap.get(node.lt);
+        node.rt.accept(this);
         Operand rt = exprSrcMap.get(node.rt);
         IRStorePos store = new VirtualRegister("");
 
@@ -1109,8 +1109,8 @@ public class IRBuilder implements AstVisitor{
 
     private void processCmpBop(BinaryExprNode node){
         node.lt.accept(this);
-        node.rt.accept(this);
         Operand lt = exprSrcMap.get(node.lt);
+        node.rt.accept(this);
         Operand rt = exprSrcMap.get(node.rt);
         VirtualRegister store = new VirtualRegister("");
 

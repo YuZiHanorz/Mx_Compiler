@@ -72,6 +72,7 @@ public class IRFunc {
                 s.preds.add(b);
         }
 
+        //swap else and then for better performance
         for (BasicBlock b : sonBB){
             if (b.lastInst instanceof IRBranch){
                 if (((IRBranch) b.lastInst).thenBB.preds.size() < ((IRBranch) b.lastInst).elseBB.preds.size())

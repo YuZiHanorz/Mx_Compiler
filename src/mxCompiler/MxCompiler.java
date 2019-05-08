@@ -79,6 +79,11 @@ public class MxCompiler {
         ast.accept(semanticChecker);
 
         checkError(errorTable);
+        
+        if (Configuration.useConstFolderOpt) {
+            ConstFolderOpt constFolderOpt = new ConstFolderOpt();
+            ast.accept(constFolderOpt);
+        }
 
         IRBuilder irBuilder = new IRBuilder(globalSymbolTable);
         ast.accept(irBuilder);

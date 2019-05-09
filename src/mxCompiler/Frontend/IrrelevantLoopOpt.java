@@ -177,10 +177,20 @@ public class IrrelevantLoopOpt implements AstVisitor {
     }
 
     @Override
-    public void visit(SubscriptExprNode node){}
+    public void visit(SubscriptExprNode node){
+        node.subscript.accept(this);
+        exprRelevantMap.put(node, new HashSet<>(exprRelevantMap.getOrDefault(node.subscript, new HashSet<>())));
+    }
 
     @Override
-    public void visit(FuncCallExprNode node){}
+    public void visit(FuncCallExprNode node){
+        HashSet<VarSymbol> set = new HashSet<>();
+        for (ExprNode e : node.argList){
+            e.accept(this);
+            set.addAll(exprRelevantMap.getOrDefault(e, new HashSet<>()));
+        }
+        exprRelevantMap.put(node, set);
+    }
 
     @Override
     public void visit(NewExprNode node){}

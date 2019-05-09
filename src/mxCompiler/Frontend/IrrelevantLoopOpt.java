@@ -135,10 +135,13 @@ public class IrrelevantLoopOpt implements AstVisitor {
             return;
         if (ifStmt.elseStmt != null)
             return;
+        HashSet<VarSymbol> initRelevant = exprRelevantMap.getOrDefault(node.init, new HashSet<>());
         HashSet<VarSymbol> condRelevant = exprRelevantMap.getOrDefault(node.condition, new HashSet<>());
-        HashSet<VarSymbol> set = new HashSet<>(exprRelevantMap.getOrDefault(ifStmt.condition, new HashSet<>()));
-        set.retainAll(condRelevant);
-        if (set.size() != 0)
+        HashSet<VarSymbol> set1 = new HashSet<>(condRelevant);
+        HashSet<VarSymbol> set2 = new HashSet<>(exprRelevantMap.getOrDefault(ifStmt.condition, new HashSet<>()));
+        set1.addAll(initRelevant);
+        set2.retainAll(set1);
+        if (set2.size() != 0)
             return;
         ((BlockStmtNode) node.body).stmtList.remove(ifStmt);
         ((BlockStmtNode) node.body).stmtList.add(ifStmt.thenStmt);

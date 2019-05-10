@@ -8,13 +8,14 @@ public class Configuration {
     public static boolean printAST = false;
     public static boolean printIR = false;
     public static boolean printIRAfterRescan = false;
-    public static boolean printIRAfterAllocate = false;
+    public static boolean printIRAfterAllocate = true;
     public static boolean printAsmFile = false;
 
     public static int regSize = 8;
     public static boolean simple = false;
 
     public static boolean useConstFolderOpt = true;
+    public static boolean useDeadInstRemoveOpt = true;
     public static boolean useInlineOpt = true;
     public static int inlineMaxDepth = 4;
     public static int inlineOpCnt = 16;

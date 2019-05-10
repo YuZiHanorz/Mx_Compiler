@@ -15,7 +15,7 @@ public class Configuration {
     public static boolean simple = false;
 
     public static boolean useConstFolderOpt = true;
-    public static boolean useDeadInstRemoveOpt = true;
+    public static boolean useDeadInstRemoveOpt = false;
     public static boolean useInlineOpt = true;
     public static int inlineMaxDepth = 4;
     public static int inlineOpCnt = 16;

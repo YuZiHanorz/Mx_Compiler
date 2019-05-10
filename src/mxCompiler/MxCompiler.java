@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.*;
+import java.util.Collection;
 
 import static java.lang.System.err;
 import static java.lang.System.exit;
@@ -99,6 +100,11 @@ public class MxCompiler {
             IRPrinter irPrinter = new IRPrinter();
             irPrinter.visit(irProgram);
             irPrinter.printTo(System.err);
+        }
+
+        if (Configuration.useDeadInstRemoveOpt){
+            DeadInstRemoveOpt deadInstRemoveOpt = new DeadInstRemoveOpt(irProgram);
+            deadInstRemoveOpt.build();
         }
 
         IRRescanner irRescanner = new IRRescanner();

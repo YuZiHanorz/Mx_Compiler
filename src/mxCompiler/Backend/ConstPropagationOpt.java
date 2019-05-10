@@ -139,7 +139,7 @@ public class ConstPropagationOpt implements IRVisitor {
     public void visit(IRMove instNode){
         Integer srcValNum = tryGetConstVal(instNode.src);
         if (valNumConstMap.containsKey(srcValNum))
-            instNode.replaceInst(new IRMove(instNode.parentBB, instNode.dest, new IntImm(valNumConstMap.get(srcValNum))));
+            instNode.src = new IntImm(valNumConstMap.get(srcValNum));
         if (instNode.dest instanceof VirtualRegister)
             propagate((VirtualRegister) instNode.dest, srcValNum);
     }

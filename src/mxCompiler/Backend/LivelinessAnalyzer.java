@@ -2,9 +2,11 @@ package mxCompiler.Backend;
 
 import mxCompiler.IR.node.BasicBlock;
 import mxCompiler.IR.node.IRFunc;
+import mxCompiler.IR.node.IRFuncCall;
 import mxCompiler.IR.node.IRInst;
 import mxCompiler.IR.operand.IRRegister;
 import mxCompiler.IR.operand.VirtualRegister;
+import org.antlr.v4.runtime.InterpreterRuleContext;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +14,7 @@ import java.util.LinkedList;
 
 public class LivelinessAnalyzer {
     public IRFunc func = null;
+    public boolean inOpt = false;
     public HashMap<VirtualRegister, HashSet<VirtualRegister>> interferenceGraph;
     public HashMap<BasicBlock, HashSet<VirtualRegister>> liveOutMap;
     public HashMap<BasicBlock, HashSet<VirtualRegister>> ueVarMap;
@@ -78,7 +81,11 @@ public class LivelinessAnalyzer {
         HashSet<VirtualRegister> ueVar = new HashSet<>();
         HashSet<VirtualRegister> varKill = new HashSet<>();
         for (IRInst i = bb.firstInst; i != null; i = i.nxtInst){
-            for (VirtualRegister vr : toVreg(i.getUsedRegs())){
+            LinkedList<IRRegister> used;
+            if (i instanceof IRFuncCall && inOpt)
+                used = ((IRFuncCall) i).getCallUsedRegs();
+            else used = i.getUsedRegs();
+            for (VirtualRegister vr : toVreg(used)){
                 if (varKill.contains(vr))
                     continue;
                 ueVar.add(vr);
@@ -90,7 +97,7 @@ public class LivelinessAnalyzer {
     }
 
     //build liveOut
-    private void buildLiveOut(){
+    public void buildLiveOut(){
         for (BasicBlock bb : func.sonBB)
             initBB(bb);
         boolean changed = true;

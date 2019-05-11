@@ -49,7 +49,7 @@ public class ConstPropagationOpt implements IRVisitor {
         if (valNumConstMap.containsKey(rt))
             instNode.rt = new IntImm(valNumConstMap.get(rt));
 
-        /*if (instNode.lt instanceof  IntImm && instNode.rt instanceof IntImm){
+        if (instNode.lt instanceof  IntImm && instNode.rt instanceof IntImm){
             boolean flag;
             switch (instNode.op){
                 case E:
@@ -76,7 +76,7 @@ public class ConstPropagationOpt implements IRVisitor {
             if (flag)
                 instNode.replaceInst(new IRJump(instNode.parentBB, instNode.thenBB));
             else instNode.replaceInst(new IRJump(instNode.parentBB, instNode.elseBB));
-        }*/
+        }
     }
 
     @Override

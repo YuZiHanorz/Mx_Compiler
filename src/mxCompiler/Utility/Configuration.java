@@ -19,6 +19,6 @@ public class Configuration {
     public static boolean useConstPropagationOpt = true;
     public static boolean useInlineOpt = true;
     public static int inlineMaxDepth = 4;
-    public static int inlineOpCnt = 16;
+    public static int inlineOpCnt = 24;
     public static boolean useIrrelevantLoopOpt = true;
 }

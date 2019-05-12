@@ -79,6 +79,15 @@ public class MxCompiler {
         ast.accept(semanticChecker);
 
         checkError(errorTable);
+        if (Configuration.useConstReplaceOpt){
+            ConstReplaceOpt constReplaceOpt = new ConstReplaceOpt();
+            ast.accept(constReplaceOpt);
+            System.err.println("------------------------");
+            System.err.println("Print the AST:\n");
+            AstPrinter astPrinter = new AstPrinter();
+            astPrinter.visit(ast);
+            astPrinter.printTo(System.err);
+        }
 
         if (Configuration.useConstFolderOpt) {
             ConstFolderOpt constFolderOpt = new ConstFolderOpt();

@@ -81,6 +81,9 @@ char* lib_stringConcat(char* ptr1, char* ptr2) {
 long lib_stringCmp(char* ptr1, char* ptr2) {
     return strcmp(ptr1 + 8, ptr2 + 8);
 }
+int lib_mod10000(int a){
+    return a % 10000;
+}
 
 extern int lib_init();
 

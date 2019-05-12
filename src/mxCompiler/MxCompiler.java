@@ -4,7 +4,6 @@ import mxCompiler.Ast.node.ProgramNode;
 import mxCompiler.Backend.*;
 import mxCompiler.Frontend.*;
 import mxCompiler.IR.node.IRProgram;
-import mxCompiler.IR.operand.IRRegister;
 import mxCompiler.Parser.MxLexer;
 import mxCompiler.Parser.MxParser;
 import mxCompiler.Parser.SyntaxErrorListener;
@@ -26,7 +25,7 @@ import static java.lang.System.exit;
 public class MxCompiler {
 
     public static void main(String[] args) throws IOException {
-        boolean debug = false;
+        boolean debug = true;
         CharStream input;
         if (debug){
             String filename = "program.cpp";
@@ -85,6 +84,10 @@ public class MxCompiler {
             ConstFolderOpt constFolderOpt = new ConstFolderOpt();
             ast.accept(constFolderOpt);
         }
+        if (Configuration.useOutIrrelevantCodeOpt){
+            OutputIrrelevantCodeOpt outputIrrelevantCodeOpt = new OutputIrrelevantCodeOpt();
+            ast.accept(outputIrrelevantCodeOpt);
+        }
         if (Configuration.useIrrelevantLoopOpt){
             IrrelevantLoopOpt irrelevantLoopOpt = new IrrelevantLoopOpt();
             ast.accept(irrelevantLoopOpt);
@@ -104,6 +107,13 @@ public class MxCompiler {
         if (Configuration.useConstPropagationOpt){
             ConstPropagationOpt constPropagationOpt = new ConstPropagationOpt();
             irProgram.accept(constPropagationOpt);
+            if (Configuration.printIR){
+                System.err.println("------------------------");
+                System.err.println("Print IR after ConstPropagationOpt:\n");
+                IRPrinter irPrinter = new IRPrinter();
+                irPrinter.visit(irProgram);
+                irPrinter.printTo(System.err);
+            }
         }
 
         if (Configuration.useDeadInstRemoveOpt){

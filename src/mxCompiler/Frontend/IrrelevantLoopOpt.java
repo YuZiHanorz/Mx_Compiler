@@ -29,29 +29,8 @@ public class IrrelevantLoopOpt implements AstVisitor {
 
     @Override
     public void visit(FuncDeclNode node){
-        for (StmtNode s : node.block) {
+        for (StmtNode s : node.block) 
             s.accept(this);
-            if (s instanceof ForStmtNode){
-                if (((ForStmtNode) s).body instanceof ExprStmtNode){
-                    if (!(((ExprStmtNode) ((ForStmtNode) s).body).expr instanceof AssignExprNode))
-                        continue;
-                    HashSet<VarSymbol> initRelevant = exprRelevantMap.getOrDefault(((ForStmtNode) s).init, new HashSet<>());
-                    HashSet<VarSymbol> condRelevant = exprRelevantMap.getOrDefault(((ForStmtNode) s).condition, new HashSet<>());
-                    HashSet<VarSymbol> set1 = new HashSet<>(condRelevant);
-                    set1.addAll(initRelevant);
-                    HashSet<VarSymbol> set = new HashSet<>(exprRelevantMap.getOrDefault(((ExprStmtNode) ((ForStmtNode) s).body).expr, new HashSet<>()));
-                    set.retainAll(set1);
-                    if (set.size() != 0)
-                        continue;
-                    if (((AssignExprNode) ((ExprStmtNode) ((ForStmtNode) s).body).expr).lt instanceof IdExprNode){
-                        if (((IdExprNode) ((AssignExprNode) ((ExprStmtNode) ((ForStmtNode) s).body).expr).lt).name.equals("c")) {
-                            ExprStmtNode a = (ExprStmtNode) ((ForStmtNode) s).body;
-                            Collections.replaceAll(node.block, s, a);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     @Override

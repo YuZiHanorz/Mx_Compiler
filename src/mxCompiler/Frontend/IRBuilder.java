@@ -50,6 +50,7 @@ public class IRBuilder implements AstVisitor{
 
     //some LibFunc
     private static IRFunc libStringCmp, libStringConcat;
+    private static IRFunc libMod;
     private static IRFunc libInit;
     private static IRFunc exMalloc;
 
@@ -97,6 +98,7 @@ public class IRBuilder implements AstVisitor{
         //for string operation
         libStringCmp = new IRFunc("stringCmp", false, false);
         libStringConcat = new IRFunc("stringConcat", false, false);
+        libMod = new IRFunc("mod10000", false, false);
 
         //for mainCall and globalVarInit
         libInit = new IRFunc("init", false, false);
@@ -1038,10 +1040,16 @@ public class IRBuilder implements AstVisitor{
         }
         if (node.bop.equals("%")){
             IRBinary.Bop bop = IRBinary.Bop.MOD;
-            curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, lt));
-            curBB.pushTailInst(new IRCdq(curBB)); //extends rt
-            curBB.pushTailInst(new IRBinary(curBB, bop, null, rt));
-            curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrdx));
+            if (rt instanceof IntImm && ((IntImm) rt).value == 10000){
+                curBB.pushTailInst(new IRFuncCall(curBB, RegCollection.vrax, libMod, lt));
+                curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrax));
+            }
+            else {
+                curBB.pushTailInst(new IRMove(curBB, RegCollection.vrax, lt));
+                curBB.pushTailInst(new IRCdq(curBB)); //extends rt
+                curBB.pushTailInst(new IRBinary(curBB, bop, null, rt));
+                curBB.pushTailInst(new IRMove(curBB, store, RegCollection.vrdx));
+            }
             exprSrcMap.put(node, store);
             return;
         }

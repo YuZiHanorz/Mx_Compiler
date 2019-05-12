@@ -15,10 +15,11 @@ public class Configuration {
     public static boolean simple = false;
 
     public static boolean useConstFolderOpt = true;
+    public static boolean useOutIrrelevantCodeOpt = true;
     public static boolean useDeadInstRemoveOpt = true;
     public static boolean useConstPropagationOpt = true;
     public static boolean useInlineOpt = true;
     public static int inlineMaxDepth = 4;
-    public static int inlineOpCnt = 25;
+    public static int inlineOpCnt = 24;
     public static boolean useIrrelevantLoopOpt = true;
 }

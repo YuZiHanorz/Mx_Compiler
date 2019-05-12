@@ -17,6 +17,7 @@ global lib_stringParseInt
 global lib_stringOrd
 global lib_stringConcat
 global lib_stringCmp
+global lib_mod10000
 global main
 
 extern strcmp
@@ -339,6 +340,27 @@ lib_stringCmp:
         call    strcmp
         add     rsp, 8
         cdqe
+        ret
+
+
+
+
+
+
+ALIGN   16
+
+lib_mod10000:
+        mov     eax, edi
+        mov     edx, 1759218605
+        imul    edx
+        mov     eax, edx
+        mov     edx, edi
+        sar     eax, 12
+        sar     edx, 31
+        sub     eax, edx
+        imul    eax, eax, 10000
+        sub     edi, eax
+        mov     eax, edi
         ret
 
 
